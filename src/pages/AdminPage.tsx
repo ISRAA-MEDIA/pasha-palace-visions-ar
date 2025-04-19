@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { generateAllExhibitQRs, QRCodeData } from "../utils/qrGenerator";
@@ -8,6 +8,7 @@ import { toast } from "@/components/ui/use-toast";
 
 const AdminPage = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [exhibits, setExhibits] = useState<string[]>([]);
   const [qrCodes, setQrCodes] = useState<QRCodeData[]>([]);
   const [newExhibit, setNewExhibit] = useState("");
@@ -19,18 +20,18 @@ const AdminPage = () => {
   
   const exhibitInputRef = useRef<HTMLInputElement>(null);
 
-  // If not logged in, redirect to auth page
-  if (!user) {
-    return <Navigate to="/auth" />;
-  }
-
-  // Save baseUrl to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('qr-base-url', baseUrl);
-  }, [baseUrl]);
-
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        variant: "destructive",
+        title: "Sign Out Error",
+        description: "There was a problem signing out. Please try again."
+      });
+    }
   };
 
   const addExhibit = () => {
