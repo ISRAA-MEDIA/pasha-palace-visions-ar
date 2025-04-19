@@ -1,19 +1,28 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { generateAllExhibitQRs, QRCodeData } from "../utils/qrGenerator";
+import { toast } from "@/components/ui/use-toast";
 
 const AdminPage = () => {
   const { signOut } = useAuth();
   const [exhibits, setExhibits] = useState<string[]>([]);
   const [qrCodes, setQrCodes] = useState<QRCodeData[]>([]);
   const [newExhibit, setNewExhibit] = useState("");
-  const [baseUrl, setBaseUrl] = useState(window.location.origin);
+  const [baseUrl, setBaseUrl] = useState(() => {
+    // Default to current origin, but allow overriding for production deployment
+    return localStorage.getItem('qr-base-url') || window.location.origin;
+  });
   const [isGenerated, setIsGenerated] = useState(false);
   
   const exhibitInputRef = useRef<HTMLInputElement>(null);
+
+  // Save baseUrl to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('qr-base-url', baseUrl);
+  }, [baseUrl]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -38,6 +47,10 @@ const AdminPage = () => {
       const generated = generateAllExhibitQRs(exhibits, baseUrl);
       setQrCodes(generated);
       setIsGenerated(true);
+      toast({
+        title: "QR Codes Generated",
+        description: `Created ${exhibits.length} QR code URLs using base URL: ${baseUrl}`,
+      });
     }
   };
   
@@ -70,6 +83,9 @@ const AdminPage = () => {
               className="w-full p-3 bg-gray-900 border border-gray-700 rounded text-white"
               placeholder="https://yourdomain.com"
             />
+            <p className="text-xs text-amber-400 mt-1">
+              Important: Make sure this matches your deployed site URL for QR codes to work in production
+            </p>
           </div>
           
           <div className="mb-6">
@@ -147,6 +163,10 @@ const AdminPage = () => {
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(qr.url);
+                        toast({
+                          title: "URL Copied",
+                          description: "QR code URL copied to clipboard",
+                        });
                       }}
                       className="text-sm text-blue-400 hover:text-blue-300"
                     >
