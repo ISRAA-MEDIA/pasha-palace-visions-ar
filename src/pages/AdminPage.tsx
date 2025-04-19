@@ -1,10 +1,10 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { generateAllExhibitQRs, QRCodeData } from "../utils/qrGenerator";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminPage = () => {
   const { user, signOut } = useAuth();
@@ -12,8 +12,8 @@ const AdminPage = () => {
   const [exhibits, setExhibits] = useState<string[]>([]);
   const [qrCodes, setQrCodes] = useState<QRCodeData[]>([]);
   const [newExhibit, setNewExhibit] = useState("");
+  const [youtubeUrls, setYoutubeUrls] = useState<{[key: string]: string}>({});
   const [baseUrl, setBaseUrl] = useState(() => {
-    // Default to current origin, but allow overriding for production deployment
     return localStorage.getItem('qr-base-url') || window.location.origin;
   });
   const [isGenerated, setIsGenerated] = useState(false);
@@ -46,8 +46,49 @@ const AdminPage = () => {
     const updated = [...exhibits];
     updated.splice(index, 1);
     setExhibits(updated);
+    
+    const newYoutubeUrls = {...youtubeUrls};
+    delete newYoutubeUrls[exhibits[index]];
+    setYoutubeUrls(newYoutubeUrls);
   };
   
+  const updateYoutubeUrl = (exhibitId: string, url: string) => {
+    setYoutubeUrls(prev => ({
+      ...prev,
+      [exhibitId]: url
+    }));
+  };
+
+  const saveExhibitVideos = async () => {
+    try {
+      const videoInserts = Object.entries(youtubeUrls).map(([exhibit_id, youtube_url]) => ({
+        exhibit_id,
+        youtube_url
+      }));
+
+      const { error } = await supabase
+        .from('exhibit_videos')
+        .upsert(videoInserts, { 
+          onConflicts: 'exhibit_id',
+          returning: 'minimal'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "YouTube URLs Saved",
+        description: `Saved ${videoInserts.length} exhibit video URLs`
+      });
+    } catch (error) {
+      console.error("Error saving exhibit videos:", error);
+      toast({
+        variant: "destructive",
+        title: "Save Error",
+        description: "There was a problem saving the YouTube URLs"
+      });
+    }
+  };
+
   const generateQRCodes = () => {
     if (exhibits.length > 0) {
       const generated = generateAllExhibitQRs(exhibits, baseUrl);
@@ -126,10 +167,19 @@ const AdminPage = () => {
               <ul className="space-y-2">
                 {exhibits.map((exhibit, index) => (
                   <li key={index} className="flex justify-between items-center bg-gray-800 p-3 rounded">
-                    <span>{exhibit}</span>
+                    <div className="flex-1 mr-4">
+                      <span>{exhibit}</span>
+                      <input 
+                        type="text" 
+                        placeholder="YouTube Video URL" 
+                        value={youtubeUrls[exhibit] || ''} 
+                        onChange={(e) => updateYoutubeUrl(exhibit, e.target.value)}
+                        className="ml-4 w-full p-2 bg-gray-700 rounded text-white"
+                      />
+                    </div>
                     <button 
                       onClick={() => removeExhibit(index)}
-                      className="text-red-400 hover:text-red-300"
+                      className="text-red-400 hover:text-red-300 mr-4"
                     >
                       Remove
                     </button>
@@ -139,13 +189,22 @@ const AdminPage = () => {
             )}
           </div>
           
-          <button 
-            onClick={generateQRCodes}
-            disabled={exhibits.length === 0}
-            className={`w-full py-3 ${exhibits.length > 0 ? "bg-gold text-black hover:bg-gold/80" : "bg-gray-700 text-gray-300 cursor-not-allowed"} rounded font-medium`}
-          >
-            Generate QR Code URLs
-          </button>
+          {exhibits.length > 0 && (
+            <div className="flex space-x-4">
+              <button 
+                onClick={saveExhibitVideos}
+                className="w-full py-3 bg-green-600 text-white hover:bg-green-700 rounded font-medium"
+              >
+                Save YouTube URLs
+              </button>
+              <button 
+                onClick={generateQRCodes}
+                className={`w-full py-3 ${exhibits.length > 0 ? "bg-gold text-black hover:bg-gold/80" : "bg-gray-700 text-gray-300 cursor-not-allowed"} rounded font-medium`}
+              >
+                Generate QR Code URLs
+              </button>
+            </div>
+          )}
         </div>
         
         {isGenerated && (
