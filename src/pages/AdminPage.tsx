@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+
+import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { generateAllExhibitQRs, QRCodeData } from "../utils/qrGenerator";
 
 const AdminPage = () => {
-  const { isAdmin, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [exhibits, setExhibits] = useState<string[]>([]);
   const [qrCodes, setQrCodes] = useState<QRCodeData[]>([]);
   const [newExhibit, setNewExhibit] = useState("");
@@ -14,19 +14,10 @@ const AdminPage = () => {
   const [isGenerated, setIsGenerated] = useState(false);
   
   const exhibitInputRef = useRef<HTMLInputElement>(null);
-  
-  useEffect(() => {
-    if (!isAdmin) {
-      navigate('/auth');
-    }
-  }, [isAdmin, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
   };
-
-  if (!isAdmin) return null;
 
   const addExhibit = () => {
     if (newExhibit && !exhibits.includes(newExhibit)) {
