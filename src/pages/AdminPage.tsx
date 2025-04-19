@@ -1,13 +1,13 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { generateAllExhibitQRs, QRCodeData } from "../utils/qrGenerator";
 import { toast } from "@/components/ui/use-toast";
 
 const AdminPage = () => {
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [exhibits, setExhibits] = useState<string[]>([]);
   const [qrCodes, setQrCodes] = useState<QRCodeData[]>([]);
   const [newExhibit, setNewExhibit] = useState("");
@@ -18,6 +18,11 @@ const AdminPage = () => {
   const [isGenerated, setIsGenerated] = useState(false);
   
   const exhibitInputRef = useRef<HTMLInputElement>(null);
+
+  // If not logged in, redirect to auth page
+  if (!user) {
+    return <Navigate to="/auth" />;
+  }
 
   // Save baseUrl to localStorage whenever it changes
   useEffect(() => {

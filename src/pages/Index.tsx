@@ -1,35 +1,44 @@
 
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
 
 const Index = () => {
-  useEffect(() => {
-    document.body.classList.add("loaded");
-  }, []);
+  const { user } = useAuth();
 
   return (
-    <div className="h-screen w-full bg-darkBg overflow-hidden relative">
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 transition-opacity duration-200" 
-        style={{ 
-          backgroundImage: "url('/museum-background.jpg')", 
-          filter: "brightness(0.4)" 
-        }}
-      ></div>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white z-10">
-        <div className="text-6xl mb-4">🏛️</div>
-        <h1 className="font-playfair text-4xl md:text-5xl tracking-wider mb-2 text-white" 
-          style={{ textShadow: "0 0 10px rgba(212, 175, 55, 0.8)" }}>
-          Mustapha Pasha Palace
+    <div className="min-h-screen bg-darkBg text-white flex flex-col">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold text-gold mb-6">
+          Museum Guide Experience
         </h1>
-        <p className="text-gray-300 text-lg md:text-xl mt-2">
-          A digital window into Algeria&apos;s hidden elegance
+        <p className="text-xl md:text-2xl mb-10 max-w-3xl">
+          Discover our exhibits through interactive videos
         </p>
-        
-        <div className="mt-16">
-          <Link to="/scan" className="bg-transparent border-2 border-gold px-6 py-3 rounded-md text-gold hover:bg-gold hover:text-darkBg transition-all duration-300">
-            Scan a QR Code
+        <div className="space-y-4">
+          <Link to="/scan">
+            <Button size="lg" className="w-64 bg-gold text-black hover:bg-gold/80">
+              Scan QR Code
+            </Button>
           </Link>
+          
+          {!user && (
+            <div className="mt-8">
+              <Link to="/auth" className="text-sm text-gray-400 hover:text-gold">
+                Admin Login
+              </Link>
+            </div>
+          )}
+          
+          {user && (
+            <div className="mt-4">
+              <Link to="/admin">
+                <Button variant="outline" size="lg" className="w-64">
+                  Admin Dashboard
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

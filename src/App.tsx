@@ -11,6 +11,7 @@ import VideoPage from "./pages/VideoPage";
 import AdminPage from "./pages/AdminPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
+import AuthenticatedRoute from "./components/AuthenticatedRoute";
 
 const queryClient = new QueryClient();
 
