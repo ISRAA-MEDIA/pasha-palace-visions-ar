@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
@@ -61,23 +62,23 @@ const AdminPage = () => {
 
   const saveExhibitVideos = async () => {
     try {
-      const videoInserts = Object.entries(youtubeUrls).map(([exhibit_id, youtube_url]) => ({
-        exhibit_id,
-        youtube_url
-      }));
+      for (const [exhibit_id, youtube_url] of Object.entries(youtubeUrls)) {
+        const { error } = await supabase
+          .from('exhibit_videos')
+          .upsert({ 
+            exhibit_id,
+            youtube_url
+          }, { 
+            onConflict: 'exhibit_id',
+            returning: 'minimal'
+          });
 
-      const { error } = await supabase
-        .from('exhibit_videos')
-        .upsert(videoInserts, { 
-          onConflicts: 'exhibit_id',
-          returning: 'minimal'
-        });
-
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       toast({
         title: "YouTube URLs Saved",
-        description: `Saved ${videoInserts.length} exhibit video URLs`
+        description: `Saved ${Object.keys(youtubeUrls).length} exhibit video URLs`
       });
     } catch (error) {
       console.error("Error saving exhibit videos:", error);
