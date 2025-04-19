@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // This would be replaced with a real config file in production
 const VIDEOS_CONFIG = {
@@ -60,6 +61,7 @@ const VideoPage = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -162,7 +164,7 @@ const VideoPage = () => {
         {videoConfig && (
           <>
             <h1 className="text-gold text-2xl font-playfair mb-4">{videoConfig.title}</h1>
-            <div className="video-container relative w-full max-w-4xl aspect-video bg-black">
+            <div className={`video-container relative w-full ${isMobile ? 'max-w-full' : 'max-w-4xl'} bg-black`}>
               <iframe
                 ref={videoRef}
                 className="w-full h-full"

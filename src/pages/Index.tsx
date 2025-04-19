@@ -1,6 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { QrCode } from "lucide-react";
 
 const Index = () => {
   return (
@@ -14,7 +15,8 @@ const Index = () => {
         </p>
         <div className="space-y-4">
           <Link to="/scan">
-            <Button size="lg" className="w-64 bg-gold text-black hover:bg-gold/80">
+            <Button size="lg" className="w-64 bg-gold text-black hover:bg-gold/80 flex items-center justify-center gap-2">
+              <QrCode size={20} />
               Scan QR Code
             </Button>
           </Link>

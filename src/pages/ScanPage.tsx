@@ -24,13 +24,7 @@ const ScanPage = () => {
     const randomExhibit = exhibits[Math.floor(Math.random() * exhibits.length)];
     
     // Generate a valid token for the exhibit
-    const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-    const payload = btoa(JSON.stringify({
-      vid: randomExhibit,
-      exp: Date.now() + (24 * 60 * 60 * 1000)
-    }));
-    const signature = btoa(`${header}.${payload}.SECRET_KEY`);
-    const token = `${header}.${payload}.${signature}`;
+    const token = generateSecureToken(randomExhibit);
     
     setTimeout(() => {
       navigate(`/video/${randomExhibit}?token=${token}`);
