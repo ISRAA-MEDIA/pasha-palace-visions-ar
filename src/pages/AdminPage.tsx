@@ -1,10 +1,12 @@
-
-import { useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 import { generateAllExhibitQRs, QRCodeData } from "../utils/qrGenerator";
 
-// In a real app, this would be a protected route with authentication
 const AdminPage = () => {
+  const { isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
   const [exhibits, setExhibits] = useState<string[]>([]);
   const [qrCodes, setQrCodes] = useState<QRCodeData[]>([]);
   const [newExhibit, setNewExhibit] = useState("");
@@ -13,6 +15,19 @@ const AdminPage = () => {
   
   const exhibitInputRef = useRef<HTMLInputElement>(null);
   
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate('/auth');
+    }
+  }, [isAdmin, navigate]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  if (!isAdmin) return null;
+
   const addExhibit = () => {
     if (newExhibit && !exhibits.includes(newExhibit)) {
       setExhibits([...exhibits, newExhibit]);
@@ -40,7 +55,16 @@ const AdminPage = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-playfair text-gold">QR Code Management</h1>
-          <Link to="/" className="text-sm text-gray-400 hover:text-gold">Back to Home</Link>
+          <div className="flex items-center gap-4">
+            <Link to="/" className="text-sm text-gray-400 hover:text-gold">Back to Home</Link>
+            <Button 
+              onClick={handleSignOut}
+              variant="outline"
+              className="text-sm"
+            >
+              Sign Out
+            </Button>
+          </div>
         </div>
         
         <div className="bg-black/30 rounded-xl p-6 mb-6">
