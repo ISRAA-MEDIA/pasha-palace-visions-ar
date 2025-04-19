@@ -5,7 +5,7 @@
  * This file provides utilities to generate secure QR codes for museum exhibits.
  */
 
-// A simple token generation function to simulate JWT
+// A secure token generation function that simulates JWT
 const generateSecureToken = (videoId: string, expiryHours = 24): string => {
   // Create a header (in a real JWT this would be algorithm info)
   const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));

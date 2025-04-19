@@ -1,10 +1,41 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { QrCode } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { generateSecureToken } from "../utils/qrGenerator";
 
 const ScanPage = () => {
   const [scanning, setScanning] = useState(false);
+  const navigate = useNavigate();
+  
+  const handleScan = () => {
+    setScanning(true);
+    toast({
+      title: "Scanning QR Code",
+      description: "Please hold your device steady..."
+    });
+    
+    // This would normally activate the camera for QR scanning
+    // For demo purposes, we'll redirect to sample videos after a delay
+    
+    // Simulate scanning different exhibit QR codes
+    const exhibits = ["sample", "dining", "garden", "library"];
+    const randomExhibit = exhibits[Math.floor(Math.random() * exhibits.length)];
+    
+    // Generate a valid token for the exhibit
+    const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+    const payload = btoa(JSON.stringify({
+      vid: randomExhibit,
+      exp: Date.now() + (24 * 60 * 60 * 1000)
+    }));
+    const signature = btoa(`${header}.${payload}.SECRET_KEY`);
+    const token = `${header}.${payload}.${signature}`;
+    
+    setTimeout(() => {
+      navigate(`/video/${randomExhibit}?token=${token}`);
+    }, 2000);
+  };
   
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-darkBg p-6 text-white">
@@ -29,14 +60,7 @@ const ScanPage = () => {
           
           <div className="space-y-4">
             <button 
-              onClick={() => {
-                setScanning(true);
-                // This would normally activate the camera for QR scanning
-                // For demo purposes, we'll redirect to a sample video after a delay
-                setTimeout(() => {
-                  window.location.href = "/video/sample?token=eyJhbGciOiJIUzI1NiJ9";
-                }, 2000);
-              }}
+              onClick={handleScan}
               className="w-full py-3 px-6 bg-gold text-black rounded-md hover:bg-gold/80 transition-all font-medium"
               disabled={scanning}
             >
