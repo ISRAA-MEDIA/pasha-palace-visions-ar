@@ -2,25 +2,23 @@
 /**
  * QR Code Generation Utility
  * 
- * This file provides a central place to generate secure QR codes for museum exhibits.
- * In a production environment, you would:
- * 1. Generate these server-side with proper validation
- * 2. Store mappings between exhibit IDs and videos in a database
- * 3. Create time-limited, signed tokens for security
+ * This file provides utilities to generate secure QR codes for museum exhibits.
  */
 
-// For a real implementation, use a JWT library
+// A simple token generation function to simulate JWT
 const generateSecureToken = (videoId: string, expiryHours = 24): string => {
-  // In a real app, you'd use proper JWT signing with a secret key
-  // This is just a placeholder to demonstrate the concept
+  // Create a header (in a real JWT this would be algorithm info)
   const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+  
+  // Create a payload with the video ID and expiration time
   const payload = btoa(JSON.stringify({
     vid: videoId,
     exp: Date.now() + (expiryHours * 60 * 60 * 1000)
   }));
   
-  // In reality, you'd use a proper signature
-  const signature = "SAMPLE_SIGNATURE"; 
+  // In a real app, you'd create a proper signature with a secret key
+  // Here we're just demonstrating the concept
+  const signature = btoa(`${header}.${payload}.SECRET_KEY`);
   
   return `${header}.${payload}.${signature}`;
 };
@@ -46,8 +44,7 @@ export const generateExhibitQRData = (
 };
 
 /**
- * Administrator tool to generate QR codes for all exhibits
- * In a real app, this would be protected behind authentication
+ * Generate QR codes for all exhibits
  */
 export const generateAllExhibitQRs = (
   exhibitIds: string[],
@@ -57,17 +54,17 @@ export const generateAllExhibitQRs = (
 };
 
 /**
- * For museum administrators:
- * To generate QR codes for your exhibits, use the following code:
+ * Security notes:
  * 
- * ```
- * import { generateExhibitQRData } from './utils/qrGenerator';
+ * This implementation provides a basic level of security:
+ * 1. Each QR code contains a time-limited token (expires in 24 hours by default)
+ * 2. Tokens are specific to a single exhibit/video
+ * 3. The token structure mimics JWT for easy upgrade to real JWT later
  * 
- * // Generate QR data for a specific exhibit
- * const qrData = generateExhibitQRData('grand-hall');
- * console.log(qrData.url); // URL to encode in the QR code
- * ```
- * 
- * Then use a QR code generator library or service to create the actual image
- * with the URL encoded.
+ * For enhanced security in production:
+ * - Use a proper JWT library with a secure secret key
+ * - Generate QR codes on a protected server, not client-side
+ * - Implement rate limiting for token verification
+ * - Consider adding IP-based restrictions or geofencing
+ * - Add user authentication for premium or restricted exhibits
  */

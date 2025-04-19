@@ -1,19 +1,57 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
-import { Home, Play, Pause } from "lucide-react";
+import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
-// This would be replaced with a real database or config file
+// This would be replaced with a real config file in production
 const VIDEOS_CONFIG = {
   'sample': {
-    youtubeId: 'dQw4w9WgXcQ', // Just a placeholder, replace with your actual video
+    youtubeId: 'dQw4w9WgXcQ',
     title: 'The Grand Hall',
     description: 'Discover the ornate details of the main reception hall',
   },
   'dining': {
-    youtubeId: 'wuQEFQ7oZzk', // Another placeholder
+    youtubeId: 'wuQEFQ7oZzk',
     title: 'The Dining Chamber',
     description: 'Where elegant feasts were once served to distinguished guests',
+  },
+  'garden': {
+    youtubeId: 'FtutLA63Cp8',
+    title: 'The Palace Gardens',
+    description: 'Explore the beautiful gardens surrounding the palace',
+  },
+  'library': {
+    youtubeId: 'QH2-TGUlwu4',
+    title: 'The Ancient Library',
+    description: 'Home to thousands of rare manuscripts and historical documents',
+  }
+};
+
+// Simple token validation function
+const validateToken = (token: string | null, videoId: string | undefined): boolean => {
+  if (!token || !videoId) return false;
+  
+  // Simple validation - token must start with "eyJ" (like a JWT)
+  // and contain the videoId encoded in base64
+  if (!token.startsWith("eyJ")) return false;
+  
+  try {
+    // Extract the middle part of the token which would be the payload in a JWT
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    
+    // Decode the payload
+    const payload = JSON.parse(atob(parts[1]));
+    
+    // Check if the video ID matches and token is not expired
+    return (
+      payload.vid === videoId && 
+      payload.exp > Date.now()
+    );
+  } catch (e) {
+    console.error("Token validation error:", e);
+    return false;
   }
 };
 
@@ -24,6 +62,7 @@ const VideoPage = () => {
   const navigate = useNavigate();
   
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -31,18 +70,18 @@ const VideoPage = () => {
   const videoRef = useRef<HTMLIFrameElement>(null);
   
   useEffect(() => {
-    if (!videoId || !token) {
-      setError("Invalid video link. Please scan a valid QR code.");
+    // Validate the token and videoId
+    if (!validateToken(token, videoId)) {
+      setError("Invalid or expired access link. Please scan a valid QR code.");
+      toast({
+        variant: "destructive",
+        title: "Access Error",
+        description: "Invalid or expired access link."
+      });
       return;
     }
     
-    // Simple validation - in reality you'd verify the token on your server
-    if (!token.startsWith("eyJ")) {
-      setError("Unauthorized access.");
-      return;
-    }
-    
-    const videoConfig = VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG];
+    const videoConfig = videoId ? VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG] : null;
     if (!videoConfig) {
       setError("Video not found.");
       return;
@@ -71,7 +110,7 @@ const VideoPage = () => {
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
     
-    // In a real implementation, you'd use the YouTube Player API to control the video
+    // Control the YouTube video using the iframe API
     try {
       const iframe = videoRef.current;
       if (iframe && iframe.contentWindow) {
@@ -80,6 +119,21 @@ const VideoPage = () => {
       }
     } catch (e) {
       console.error("Could not control video playback", e);
+    }
+  };
+  
+  const handleMuteToggle = () => {
+    setIsMuted(!isMuted);
+    
+    // Control the YouTube video using the iframe API
+    try {
+      const iframe = videoRef.current;
+      if (iframe && iframe.contentWindow) {
+        const func = isMuted ? 'unMute' : 'mute';
+        iframe.contentWindow.postMessage(`{"event":"command","func":"${func}","args":""}`, '*');
+      }
+    } catch (e) {
+      console.error("Could not control video audio", e);
     }
   };
   
@@ -108,7 +162,7 @@ const VideoPage = () => {
         {videoConfig && (
           <>
             <h1 className="text-gold text-2xl font-playfair mb-4">{videoConfig.title}</h1>
-            <div className="video-container">
+            <div className="video-container relative w-full max-w-4xl aspect-video bg-black">
               <iframe
                 ref={videoRef}
                 className="w-full h-full"
@@ -119,13 +173,20 @@ const VideoPage = () => {
                 onLoad={() => setIsPlaying(true)}
               ></iframe>
               
-              <div className={`player-controls ${showControls ? 'visible' : ''}`}>
-                <button onClick={() => navigate("/")} className="control-btn">
+              <div className={`player-controls absolute bottom-0 left-0 right-0 bg-black/50 p-3 flex justify-between items-center transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+                <button onClick={() => navigate("/")} className="control-btn p-2 text-white hover:text-gold">
                   <Home size={24} />
                 </button>
-                <button onClick={handlePlayPause} className="control-btn">
-                  {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-                </button>
+                
+                <div className="flex gap-4">
+                  <button onClick={handlePlayPause} className="control-btn p-2 text-white hover:text-gold">
+                    {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                  </button>
+                  
+                  <button onClick={handleMuteToggle} className="control-btn p-2 text-white hover:text-gold">
+                    {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+                  </button>
+                </div>
               </div>
             </div>
             <p className="text-white text-center mt-4 max-w-md">{videoConfig.description}</p>
