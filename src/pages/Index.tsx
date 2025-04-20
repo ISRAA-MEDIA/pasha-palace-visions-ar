@@ -5,15 +5,15 @@ import { QrCode } from "lucide-react";
 
 const Index = () => {
   return (
-    <div 
-      className="min-h-screen flex flex-col bg-cover bg-center bg-no-repeat"
-      style={{ 
-        backgroundImage: 'url("/lovable-uploads/3603e013-56e2-48fb-bac7-640fb28a24e9.png")',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        backgroundBlend: 'overlay'
-      }}
-    >
-      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+    <div className="relative min-h-screen">
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: 'url("/lovable-uploads/3603e013-56e2-48fb-bac7-640fb28a24e9.png")',
+        }}
+      />
+      <div className="absolute inset-0 bg-black opacity-50" />
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 text-center min-h-screen">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold text-white mb-6">
           Museum Guide Experience
         </h1>
