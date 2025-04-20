@@ -119,8 +119,8 @@ const VideoPage = () => {
               <iframe
                 ref={videoRef}
                 className="w-full h-full"
-                src={`https://www.youtube.com/embed/${videoConfig.youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}`}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                src={`https://www.youtube-nocookie.com/embed/${videoConfig.youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${videoConfig.youtubeId}&loop=1`}
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 title={videoConfig.title}
                 onLoad={() => setIsPlaying(true)}
