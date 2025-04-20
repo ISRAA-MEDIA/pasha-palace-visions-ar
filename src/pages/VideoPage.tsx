@@ -4,6 +4,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { VIDEOS_CONFIG } from "@/config/videos";
 import LanguageSelector from "@/components/LanguageSelector";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 
 const VideoPage = () => {
   const { videoId } = useParams();
@@ -22,13 +25,14 @@ const VideoPage = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState("");
   
   const videoRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Get the appropriate video configuration
-  const baseVideo = baseVideoId ? VIDEOS_CONFIG[baseVideoId] : null;
+  const baseVideo = baseVideoId ? VIDEOS_CONFIG[baseVideoId as keyof typeof VIDEOS_CONFIG] : null;
   
   // Determine which YouTube ID to use based on language
   const getYoutubeId = () => {
@@ -54,15 +58,26 @@ const VideoPage = () => {
   useEffect(() => {
     if (!baseVideo) {
       setError("Video not found.");
+      setIsLoading(false);
       return;
     }
     
     if (!youtubeId) {
       setError("Video for this language not found.");
+      setIsLoading(false);
       return;
     }
     
-    setIsLoading(false);
+    // Simulate a loading progress for better UX
+    const loadingInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(loadingInterval);
+          return 90;
+        }
+        return prev + 10;
+      });
+    }, 300);
     
     const timer = setTimeout(() => {
       setShowControls(false);
@@ -72,11 +87,24 @@ const VideoPage = () => {
     const handleMessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
+        console.log("YouTube event:", data);
+        
         if (data.event === "onStateChange") {
           if (data.info === 1) { // playing
             setIsPlaying(true);
+            setIsLoading(false);
+            setLoadingProgress(100);
           } else if (data.info === 2) { // paused
             setIsPlaying(false);
+          }
+        } else if (data.event === "onReady") {
+          console.log("Video is ready");
+          setIsLoading(false);
+          setLoadingProgress(100);
+          
+          // Try to play the video when it's ready
+          if (videoRef.current && videoRef.current.contentWindow) {
+            videoRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
           }
         }
       } catch (e) {
@@ -88,21 +116,35 @@ const VideoPage = () => {
     
     return () => {
       clearTimeout(timer);
+      clearInterval(loadingInterval);
       window.removeEventListener('message', handleMessage);
     };
   }, [youtubeId, baseVideo]);
 
   // Make sure video plays on component mount
   useEffect(() => {
-    // Short timeout to ensure iframe is fully loaded
+    // First timeout to ensure iframe is fully loaded
     const playTimer = setTimeout(() => {
+      console.log("Attempting to play video...");
       if (videoRef.current && videoRef.current.contentWindow) {
         videoRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
       }
     }, 1000);
     
-    return () => clearTimeout(playTimer);
-  }, [isLoading]);
+    // Second attempt if first one fails
+    const secondAttemptTimer = setTimeout(() => {
+      console.log("Second attempt to play video...");
+      if (videoRef.current && videoRef.current.contentWindow) {
+        videoRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+      }
+      setIsLoading(false); // Force loading to end after 3 seconds
+    }, 3000);
+    
+    return () => {
+      clearTimeout(playTimer);
+      clearTimeout(secondAttemptTimer);
+    };
+  }, []);
   
   const handleControlsToggle = () => {
     setShowControls(true);
@@ -141,14 +183,6 @@ const VideoPage = () => {
     }
   };
   
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-darkBg flex items-center justify-center">
-        <div className="text-gold">Loading...</div>
-      </div>
-    );
-  }
-  
   if (error) {
     return (
       <div className="min-h-screen bg-darkBg flex flex-col items-center justify-center text-center p-6">
@@ -168,16 +202,29 @@ const VideoPage = () => {
               ref={containerRef}
               className="video-container relative w-full max-w-4xl bg-black overflow-hidden"
             >
+              {isLoading && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-20">
+                  <LoadingSpinner size={48} />
+                  <div className="w-64 mt-4">
+                    <Progress value={loadingProgress} className="h-2" />
+                  </div>
+                </div>
+              )}
+              
               <div className="absolute inset-0 z-10 pointer-events-none bg-black/5"></div>
               
               <iframe
                 ref={videoRef}
-                className="w-full h-full pointer-events-none"
-                src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&mute=1`}
-                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                className={`w-full h-full pointer-events-none ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+                src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&mute=1&playsinline=1`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 title={baseVideo.title}
-                onLoad={() => setIsPlaying(true)}
+                onLoad={() => {
+                  console.log("iframe loaded");
+                  setIsPlaying(true);
+                  setTimeout(() => setIsLoading(false), 1000);
+                }}
                 style={{ position: 'relative', zIndex: 1 }}
               />
               

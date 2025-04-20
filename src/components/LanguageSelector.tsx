@@ -2,6 +2,8 @@
 import { Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { VIDEOS_CONFIG } from "@/config/videos";
+import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LanguageSelectorProps {
   videoId: string;
@@ -15,7 +17,20 @@ const languages = [
 
 const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
   const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [selectedLang, setSelectedLang] = useState<string | null>(null);
+
   const videoConfig = VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG];
+
+  const handleLanguageSelect = (langSuffix: string) => {
+    setIsNavigating(true);
+    setSelectedLang(langSuffix);
+    
+    // Add a small delay to show the loading state
+    setTimeout(() => {
+      navigate(`/v/${videoId}${langSuffix}`);
+    }, 500);
+  };
 
   return (
     <div className="min-h-screen bg-darkBg flex flex-col items-center justify-center p-6">
@@ -33,10 +48,23 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
           {languages.map((lang) => (
             <button
               key={lang.code}
-              onClick={() => navigate(`/v/${videoId}${lang.suffix}`)}
-              className="w-full py-4 px-6 bg-black/30 hover:bg-black/40 text-white rounded-lg transition-all flex items-center justify-center gap-3"
+              onClick={() => handleLanguageSelect(lang.suffix)}
+              disabled={isNavigating}
+              className={`w-full py-4 px-6 ${
+                isNavigating && selectedLang === lang.suffix
+                  ? "bg-gold/30"
+                  : "bg-black/30 hover:bg-black/40"
+              } text-white rounded-lg transition-all flex items-center justify-center gap-3 ${
+                isNavigating && selectedLang !== lang.suffix ? "opacity-50" : ""
+              }`}
             >
-              {lang.name}
+              {isNavigating && selectedLang === lang.suffix ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-pulse">Loading</span> {lang.name}...
+                </span>
+              ) : (
+                lang.name
+              )}
             </button>
           ))}
         </div>
