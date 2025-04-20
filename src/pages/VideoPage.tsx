@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
@@ -151,7 +152,8 @@ const VideoPage = () => {
               ref={containerRef}
               className="video-container relative w-full max-w-4xl bg-black overflow-hidden"
             >
-              
+              {/* Add protective overlay to prevent using YouTube controls */}
+              <div className="absolute inset-0 z-20 pointer-events-auto"></div>
               
               <div className="absolute inset-0 z-10 pointer-events-none bg-black/5"></div>
               
