@@ -12,9 +12,12 @@ const VideoPage = () => {
   const { videoId } = useParams();
   const navigate = useNavigate();
   
+  // Force a component remount when the URL changes
+  const key = videoId || 'default';
+  
   // Check if the URL includes a language suffix
   const baseVideoId = videoId?.split('-')[0];
-  const langSuffix = videoId?.includes('-') ? videoId?.split('-')[1] : null;
+  const langSuffix = videoId?.includes('-') ? videoId?.substring(videoId.indexOf('-')) : null;
   
   // State for video player
   const [isPlaying, setIsPlaying] = useState(true);
@@ -42,11 +45,12 @@ const VideoPage = () => {
     
     // If we have a language suffix and the video has language options
     if (langSuffix && baseVideo.languages) {
-      if (langSuffix === 'en' && baseVideo.languages.en) {
+      const lang = langSuffix.substring(1); // Remove the '-' character
+      if (lang === 'en' && baseVideo.languages.en) {
         return baseVideo.languages.en;
-      } else if (langSuffix === 'fr' && baseVideo.languages.fr) {
+      } else if (lang === 'fr' && baseVideo.languages.fr) {
         return baseVideo.languages.fr;
-      } else if (langSuffix === 'ar' && baseVideo.languages.ar) {
+      } else if (lang === 'ar' && baseVideo.languages.ar) {
         return baseVideo.languages.ar;
       }
     }
@@ -210,7 +214,7 @@ const VideoPage = () => {
   }
   
   return (
-    <div className="min-h-screen bg-darkBg flex flex-col" onClick={handleControlsToggle}>
+    <div className="min-h-screen bg-darkBg flex flex-col" onClick={handleControlsToggle} key={key}>
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {baseVideo && (
           <>

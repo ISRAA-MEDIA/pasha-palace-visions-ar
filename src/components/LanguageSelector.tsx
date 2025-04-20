@@ -1,6 +1,6 @@
 
 import { Globe } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import { VIDEOS_CONFIG } from "@/config/videos";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +19,7 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
   const navigate = useNavigate();
   const [isNavigating, setIsNavigating] = useState(false);
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
+  const [navigateTo, setNavigateTo] = useState<string | null>(null);
 
   const videoConfig = VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG];
   
@@ -26,15 +27,21 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
     // Reset navigation state when component mounts or videoId changes
     setIsNavigating(false);
     setSelectedLang(null);
+    setNavigateTo(null);
   }, [videoId]);
 
   const handleLanguageSelect = (langSuffix: string) => {
     setIsNavigating(true);
     setSelectedLang(langSuffix);
     
-    // Use direct navigation rather than timeout to avoid white screen issues
-    navigate(`/v/${videoId}${langSuffix}`);
+    // Instead of navigating directly, set the target URL in state
+    setNavigateTo(`/v/${videoId}${langSuffix}`);
   };
+
+  // If navigateTo is set, render a Navigate component to perform a full navigation
+  if (navigateTo) {
+    return <Navigate to={navigateTo} replace />;
+  }
 
   return (
     <div className="min-h-screen bg-darkBg flex flex-col items-center justify-center p-6">
