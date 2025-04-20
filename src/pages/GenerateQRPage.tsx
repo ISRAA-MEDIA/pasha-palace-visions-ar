@@ -41,19 +41,19 @@ const GenerateQRPage = () => {
           </div>
           
           {selectedVideo && (
-            <div className="bg-black/30 p-6 rounded-lg">
+            <div className="bg-black/30 p-6 rounded-lg flex flex-col items-center">
               <h2 className="text-xl font-playfair mb-4 text-gold">
                 QR Code for {VIDEOS_CONFIG[selectedVideo].title}
               </h2>
-              <div className="bg-white p-4 rounded-lg inline-block">
+              <div className="bg-white p-2 rounded-lg inline-block w-40 h-40 flex items-center justify-center">
                 <QRCodeSVG
                   value={generateQRUrl(selectedVideo)}
-                  size={200}
+                  size={128}
                   level="H"
-                  includeMargin
+                  includeMargin={false}
                 />
               </div>
-              <p className="mt-4 text-sm text-gray-400">
+              <p className="mt-4 text-sm text-gray-400 text-center">
                 Scan this QR code to view the video on a mobile device
               </p>
             </div>
