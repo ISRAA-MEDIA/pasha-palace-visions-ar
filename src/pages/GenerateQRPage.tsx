@@ -1,4 +1,5 @@
 
+import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import { VIDEOS_CONFIG } from "@/config/videos";
 import { Button } from "@/components/ui/button";
@@ -8,11 +9,25 @@ import { toast } from "@/hooks/use-toast";
 const GenerateQRPage = () => {
   const [selectedVideo, setSelectedVideo] = useState<string>("");
   
+  const generateQRUrl = (videoId: string) => {
+    return `v/${videoId}`;
+  };
+  
+  const handleCopyQRCode = (videoId: string) => {
+    const qrUrl = generateQRUrl(videoId);
+    navigator.clipboard.writeText(`${window.location.origin}/${qrUrl}`).then(() => {
+      toast({
+        title: "QR Code URL Copied",
+        description: "The full QR code URL has been copied to clipboard."
+      });
+    });
+  };
+  
   return (
-    <div className="min-h-screen bg-black/50 text-white p-6">
+    <div className="min-h-screen bg-darkBg text-white p-6">
       <div className="max-w-md mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-playfair text-gold">Museum Exhibits</h1>
+          <h1 className="text-2xl font-playfair text-gold">Generate QR Codes</h1>
           <Link to="/">
             <Button variant="outline">Back to Home</Button>
           </Link>
@@ -26,15 +41,42 @@ const GenerateQRPage = () => {
                 className={`p-4 rounded-lg text-left transition-all flex justify-between items-center ${
                   selectedVideo === id ? 'bg-gold/20 border border-gold' : 'bg-black/30 hover:bg-black/50'
                 }`}
-                onClick={() => setSelectedVideo(id)}
               >
-                <div className="cursor-pointer flex-grow">
+                <div onClick={() => setSelectedVideo(id)} className="cursor-pointer flex-grow">
                   <h3 className="font-playfair text-lg mb-1">{config.title}</h3>
                   <p className="text-sm text-gray-400">{config.description}</p>
                 </div>
+                {selectedVideo === id && (
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    onClick={() => handleCopyQRCode(id)}
+                  >
+                    Copy QR URL
+                  </Button>
+                )}
               </div>
             ))}
           </div>
+          
+          {selectedVideo && (
+            <div className="bg-black/30 p-6 rounded-lg flex flex-col items-center">
+              <h2 className="text-xl font-playfair mb-4 text-gold">
+                QR Code for {VIDEOS_CONFIG[selectedVideo].title}
+              </h2>
+              <div className="bg-white p-2 rounded-lg inline-block w-40 h-40 flex items-center justify-center">
+                <QRCodeSVG
+                  value={`${window.location.origin}/${generateQRUrl(selectedVideo)}`}
+                  size={128}
+                  level="H"
+                  includeMargin={false}
+                />
+              </div>
+              <p className="mt-4 text-sm text-gray-400 text-center">
+                Scan this QR code to view the video
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

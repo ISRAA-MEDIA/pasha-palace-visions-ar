@@ -1,11 +1,11 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { QrCode } from "lucide-react";
+import { QrCode, Settings } from "lucide-react";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-darkBg text-white flex flex-col bg-cover bg-center bg-no-fixed" style={{backgroundImage: `url('/lovable-uploads/12a6813d-455a-439d-97d4-b544ee341833.png')'}}>
+    <div className="min-h-screen bg-darkBg text-white flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold text-gold mb-6">
           Museum Guide Experience
@@ -18,6 +18,12 @@ const Index = () => {
             <Button size="lg" className="w-64 bg-gold text-black hover:bg-gold/80 flex items-center justify-center gap-2">
               <QrCode size={20} />
               Scan QR Code
+            </Button>
+          </Link>
+          <Link to="/generate">
+            <Button size="lg" variant="outline" className="w-64 flex items-center justify-center gap-2">
+              <Settings size={20} />
+              Generate QR Codes
             </Button>
           </Link>
         </div>
