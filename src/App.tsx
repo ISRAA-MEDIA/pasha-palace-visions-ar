@@ -21,7 +21,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/scan" element={<ScanPage />} />
-          <Route path="/video/:videoId" element={<VideoPage />} />
+          <Route path="/v/:videoId/:token" element={<VideoPage />} />
           <Route path="/generate" element={<GenerateQRPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -11,7 +11,7 @@ const GenerateQRPage = () => {
   
   const generateQRUrl = (videoId: string) => {
     const token = generateSecureToken(videoId);
-    return `${window.location.origin}/video/${videoId}?token=${token}`;
+    return `v/${videoId}/${token}`;
   };
   
   return (

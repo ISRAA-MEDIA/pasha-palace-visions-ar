@@ -5,23 +5,16 @@ import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { VIDEOS_CONFIG } from "@/config/videos";
 
-// Token validation function
-const validateToken = (token: string | null, videoId: string | undefined): boolean => {
+// Updated token validation function to work with new URL format
+const validateToken = (token: string | undefined, videoId: string | undefined): boolean => {
   if (!token || !videoId) return false;
   
-  // Simple validation - token must start with "eyJ" (like a JWT)
-  // and contain the videoId encoded in base64
-  if (!token.startsWith("eyJ")) return false;
-  
   try {
-    // Extract the middle part of the token which would be the payload in a JWT
     const parts = token.split('.');
     if (parts.length !== 3) return false;
     
-    // Decode the payload
     const payload = JSON.parse(atob(parts[1]));
     
-    // Check if the video ID matches and token is not expired
     return (
       payload.vid === videoId && 
       payload.exp > Date.now()
@@ -33,9 +26,7 @@ const validateToken = (token: string | null, videoId: string | undefined): boole
 };
 
 const VideoPage = () => {
-  const { videoId } = useParams();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
+  const { videoId, token } = useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
