@@ -2,7 +2,6 @@
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import { VIDEOS_CONFIG } from "@/config/videos";
-import { generateRotatingToken } from "@/utils/qrGenerator";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -11,8 +10,7 @@ const GenerateQRPage = () => {
   const [selectedVideo, setSelectedVideo] = useState<string>("");
   
   const generateQRUrl = (videoId: string) => {
-    const token = generateRotatingToken(videoId);
-    return `v/${videoId}/${token}`;
+    return `v/${videoId}`;
   };
   
   const handleCopyQRCode = (videoId: string) => {
@@ -68,14 +66,14 @@ const GenerateQRPage = () => {
               </h2>
               <div className="bg-white p-2 rounded-lg inline-block w-40 h-40 flex items-center justify-center">
                 <QRCodeSVG
-                  value={generateQRUrl(selectedVideo)}
+                  value={`${window.location.origin}/${generateQRUrl(selectedVideo)}`}
                   size={128}
                   level="H"
                   includeMargin={false}
                 />
               </div>
               <p className="mt-4 text-sm text-gray-400 text-center">
-                Scan this QR code to view the video. Codes rotate every 24 hours for security.
+                Scan this QR code to view the video
               </p>
             </div>
           )}

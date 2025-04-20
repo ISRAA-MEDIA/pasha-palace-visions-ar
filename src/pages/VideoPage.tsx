@@ -5,7 +5,6 @@ import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { VIDEOS_CONFIG } from "@/config/videos";
 
-// Updated token validation function to work with new URL format
 const validateToken = (token: string | undefined, videoId: string | undefined): boolean => {
   if (!token || !videoId) return false;
   
@@ -26,7 +25,7 @@ const validateToken = (token: string | undefined, videoId: string | undefined): 
 };
 
 const VideoPage = () => {
-  const { videoId, token } = useParams();
+  const { videoId } = useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
@@ -39,17 +38,6 @@ const VideoPage = () => {
   const videoRef = useRef<HTMLIFrameElement>(null);
   
   useEffect(() => {
-    // Validate the token and videoId
-    if (!validateToken(token, videoId)) {
-      setError("Invalid or expired access link. Please scan a valid QR code.");
-      toast({
-        variant: "destructive",
-        title: "Access Error",
-        description: "Invalid or expired access link."
-      });
-      return;
-    }
-    
     const videoConfig = videoId ? VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG] : null;
     if (!videoConfig) {
       setError("Video not found.");
@@ -58,17 +46,15 @@ const VideoPage = () => {
     
     setIsLoading(false);
     
-    // Hide controls after 3 seconds
     const timer = setTimeout(() => {
       setShowControls(false);
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, [videoId, token]);
+  }, [videoId]);
   
   const handleControlsToggle = () => {
     setShowControls(true);
-    // Hide controls again after 3 seconds
     const timer = setTimeout(() => {
       setShowControls(false);
     }, 3000);
@@ -79,7 +65,6 @@ const VideoPage = () => {
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
     
-    // Control the YouTube video using the iframe API
     try {
       const iframe = videoRef.current;
       if (iframe && iframe.contentWindow) {
@@ -94,7 +79,6 @@ const VideoPage = () => {
   const handleMuteToggle = () => {
     setIsMuted(!isMuted);
     
-    // Control the YouTube video using the iframe API
     try {
       const iframe = videoRef.current;
       if (iframe && iframe.contentWindow) {
