@@ -1,35 +1,11 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { VIDEOS_CONFIG } from "@/config/videos";
 
-// This would be replaced with a real config file in production
-const VIDEOS_CONFIG = {
-  'sample': {
-    youtubeId: 'dQw4w9WgXcQ',
-    title: 'The Grand Hall',
-    description: 'Discover the ornate details of the main reception hall',
-  },
-  'dining': {
-    youtubeId: 'wuQEFQ7oZzk',
-    title: 'The Dining Chamber',
-    description: 'Where elegant feasts were once served to distinguished guests',
-  },
-  'garden': {
-    youtubeId: 'FtutLA63Cp8',
-    title: 'The Palace Gardens',
-    description: 'Explore the beautiful gardens surrounding the palace',
-  },
-  'library': {
-    youtubeId: 'QH2-TGUlwu4',
-    title: 'The Ancient Library',
-    description: 'Home to thousands of rare manuscripts and historical documents',
-  }
-};
-
-// Simple token validation function
+// Token validation function
 const validateToken = (token: string | null, videoId: string | undefined): boolean => {
   if (!token || !videoId) return false;
   
