@@ -25,5 +25,10 @@ export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
     youtubeId: 'QH2-TGUlwu4',
     title: 'The Ancient Library',
     description: 'Home to thousands of rare manuscripts and historical documents',
+  },
+  'shorts': {
+    youtubeId: 'Z0cDwBdAC5o',
+    title: 'Museum Shorts',
+    description: 'A quick glimpse into our museum experience',
   }
 };
