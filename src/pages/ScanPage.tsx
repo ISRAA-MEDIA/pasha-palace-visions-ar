@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { QrCode } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { generateSecureToken } from "../utils/qrGenerator";
 
 const ScanPage = () => {
   const [scanning, setScanning] = useState(false);
@@ -23,11 +22,8 @@ const ScanPage = () => {
     const exhibits = ["sample", "dining", "garden", "library"];
     const randomExhibit = exhibits[Math.floor(Math.random() * exhibits.length)];
     
-    // Generate a valid token for the exhibit
-    const token = generateSecureToken(randomExhibit);
-    
     setTimeout(() => {
-      navigate(`/video/${randomExhibit}?token=${token}`);
+      navigate(`/v/${randomExhibit}`);
     }, 2000);
   };
   
