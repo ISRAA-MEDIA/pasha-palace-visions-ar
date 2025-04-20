@@ -4,11 +4,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { VIDEOS_CONFIG } from "@/config/videos";
 import LanguageSelector from "@/components/LanguageSelector";
-// Remove LoadingSpinner import since we're removing the loading state
+import { useIsMobile } from "@/hooks/use-mobile";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const VideoPage = () => {
   const { videoId } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   // Check if the URL includes a language suffix
   const baseVideoId = videoId?.split('-')[0];
@@ -18,7 +20,6 @@ const VideoPage = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
-  // Remove isLoading state
   const [error, setError] = useState("");
   
   const videoRef = useRef<HTMLIFrameElement>(null);
@@ -55,8 +56,6 @@ const VideoPage = () => {
   const youtubeId = getYoutubeId();
   
   useEffect(() => {
-    // Remove initial loading state setup
-    
     if (!baseVideo) {
       setError("Video not found.");
       return;
@@ -151,21 +150,27 @@ const VideoPage = () => {
             <div 
               ref={containerRef}
               className="video-container relative w-full max-w-4xl bg-black overflow-hidden"
+              style={{ 
+                maxHeight: '80vh',
+                width: isMobile ? '100%' : 'auto',
+              }}
             >
-              {/* Add protective overlay to prevent using YouTube controls */}
+              {/* Protective overlay to prevent using YouTube controls */}
               <div className="absolute inset-0 z-20 pointer-events-auto"></div>
               
               <div className="absolute inset-0 z-10 pointer-events-none bg-black/5"></div>
               
-              <iframe
-                ref={videoRef}
-                className="w-full aspect-video"
-                src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&mute=1&playsinline=1`}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title={baseVideo.title}
-                style={{ position: 'relative', zIndex: 1 }}
-              />
+              <AspectRatio ratio={9/16} className="w-full h-full">
+                <iframe
+                  ref={videoRef}
+                  className="w-full h-full"
+                  src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&mute=1&playsinline=1`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={baseVideo.title}
+                  style={{ position: 'relative', zIndex: 1 }}
+                />
+              </AspectRatio>
               
               <div className={`player-controls absolute bottom-0 left-0 right-0 bg-black/50 p-3 flex justify-between items-center transition-opacity duration-300 z-30 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
                 <button onClick={() => navigate("/")} className="control-btn p-2 text-white hover:text-gold">
