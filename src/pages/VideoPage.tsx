@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
@@ -34,8 +35,10 @@ const VideoPage = () => {
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [videoStarted, setVideoStarted] = useState(false);
   
   const videoRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     const videoConfig = videoId ? VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG] : null;
@@ -50,7 +53,30 @@ const VideoPage = () => {
       setShowControls(false);
     }, 3000);
     
-    return () => clearTimeout(timer);
+    // Add message listener for YouTube API events
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.event === "onStateChange") {
+          // YouTube player state has changed
+          if (data.info === 1) { // playing
+            setIsPlaying(true);
+            setVideoStarted(true);
+          } else if (data.info === 2) { // paused
+            setIsPlaying(false);
+          }
+        }
+      } catch (e) {
+        // Not a parseable message, ignore
+      }
+    };
+    
+    window.addEventListener('message', handleMessage);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('message', handleMessage);
+    };
   }, [videoId]);
   
   const handleControlsToggle = () => {
@@ -115,18 +141,35 @@ const VideoPage = () => {
         {videoConfig && (
           <>
             <h1 className="text-gold text-2xl font-playfair mb-4">{videoConfig.title}</h1>
-            <div className={`video-container relative w-full ${isMobile ? 'max-w-full' : 'max-w-4xl'} bg-black`}>
+            <div 
+              ref={containerRef}
+              className={`video-container relative w-full ${isMobile ? 'max-w-full' : 'max-w-4xl'} bg-black overflow-hidden`}
+            >
+              <div className="absolute inset-0 z-10 pointer-events-none bg-black/5"></div>
+              
               <iframe
                 ref={videoRef}
                 className="w-full h-full"
-                src={`https://www.youtube-nocookie.com/embed/${videoConfig.youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${videoConfig.youtubeId}&loop=1`}
+                src={`https://www.youtube-nocookie.com/embed/${videoConfig.youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${videoConfig.youtubeId}&loop=1&autoplay=0&color=white&cc_load_policy=0`}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 title={videoConfig.title}
                 onLoad={() => setIsPlaying(true)}
+                style={{ position: 'relative', zIndex: 1 }}
               ></iframe>
               
-              <div className={`player-controls absolute bottom-0 left-0 right-0 bg-black/50 p-3 flex justify-between items-center transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+              {!videoStarted && (
+                <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/70">
+                  <button 
+                    onClick={handlePlayPause} 
+                    className="bg-gold/80 hover:bg-gold text-white p-4 rounded-full transition-all"
+                  >
+                    <Play size={32} />
+                  </button>
+                </div>
+              )}
+              
+              <div className={`player-controls absolute bottom-0 left-0 right-0 bg-black/50 p-3 flex justify-between items-center transition-opacity duration-300 z-30 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
                 <button onClick={() => navigate("/")} className="control-btn p-2 text-white hover:text-gold">
                   <Home size={24} />
                 </button>
