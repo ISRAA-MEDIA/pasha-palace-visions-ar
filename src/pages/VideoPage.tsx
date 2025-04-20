@@ -8,8 +8,8 @@ const VideoPage = () => {
   const { videoId } = useParams();
   const navigate = useNavigate();
   
-  const [isPlaying, setIsPlaying] = useState(true); // Changed to true for autoplay
-  const [isMuted, setIsMuted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Already set to true for autoplay
+  const [isMuted, setIsMuted] = useState(true); // Set to true to enable autoplay (browsers require muting)
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -53,6 +53,18 @@ const VideoPage = () => {
       window.removeEventListener('message', handleMessage);
     };
   }, [videoId]);
+
+  // Make sure video plays on component mount
+  useEffect(() => {
+    // Short timeout to ensure iframe is fully loaded
+    const playTimer = setTimeout(() => {
+      if (videoRef.current && videoRef.current.contentWindow) {
+        videoRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+      }
+    }, 1000);
+    
+    return () => clearTimeout(playTimer);
+  }, [isLoading]);
   
   const handleControlsToggle = () => {
     setShowControls(true);
@@ -105,7 +117,7 @@ const VideoPage = () => {
     return (
       <div className="min-h-screen bg-darkBg flex flex-col items-center justify-center text-center p-6">
         <div className="text-red-500 mb-4">{error}</div>
-        <Link to="/" className="text-gold underline hover:text-gold/80">Return to Home</Link>
+        <button onClick={() => navigate("/")} className="text-gold underline hover:text-gold/80">Return to Home</button>
       </div>
     );
   }
@@ -125,7 +137,7 @@ const VideoPage = () => {
               <iframe
                 ref={videoRef}
                 className="w-full h-full pointer-events-none"
-                src={`https://www.youtube-nocookie.com/embed/${videoConfig.youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${videoConfig.youtubeId}&loop=1&autoplay=1`}
+                src={`https://www.youtube-nocookie.com/embed/${videoConfig.youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${videoConfig.youtubeId}&loop=1&autoplay=1&mute=1`}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 title={videoConfig.title}
