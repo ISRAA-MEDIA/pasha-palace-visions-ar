@@ -1,9 +1,8 @@
 
 import { Globe } from "lucide-react";
-import { Link, useNavigate, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { VIDEOS_CONFIG } from "@/config/videos";
-import { useState, useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
 
 interface LanguageSelectorProps {
   videoId: string;
@@ -17,31 +16,15 @@ const languages = [
 
 const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
   const navigate = useNavigate();
-  const [isNavigating, setIsNavigating] = useState(false);
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
-  const [navigateTo, setNavigateTo] = useState<string | null>(null);
 
   const videoConfig = VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG];
   
-  useEffect(() => {
-    // Reset navigation state when component mounts or videoId changes
-    setIsNavigating(false);
-    setSelectedLang(null);
-    setNavigateTo(null);
-  }, [videoId]);
-
   const handleLanguageSelect = (langSuffix: string) => {
-    setIsNavigating(true);
     setSelectedLang(langSuffix);
-    
-    // Instead of navigating directly, set the target URL in state
-    setNavigateTo(`/v/${videoId}${langSuffix}`);
+    // Direct navigation to avoid React hooks issues
+    window.location.href = `/v/${videoId}${langSuffix}`;
   };
-
-  // If navigateTo is set, render a Navigate component to perform a full navigation
-  if (navigateTo) {
-    return <Navigate to={navigateTo} replace />;
-  }
 
   return (
     <div className="min-h-screen bg-darkBg flex flex-col items-center justify-center p-6">
@@ -60,22 +43,16 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
             <button
               key={lang.code}
               onClick={() => handleLanguageSelect(lang.suffix)}
-              disabled={isNavigating}
+              disabled={selectedLang !== null}
               className={`w-full py-4 px-6 ${
-                isNavigating && selectedLang === lang.suffix
+                selectedLang === lang.suffix
                   ? "bg-gold/30"
                   : "bg-black/30 hover:bg-black/40"
               } text-white rounded-lg transition-all flex items-center justify-center gap-3 ${
-                isNavigating && selectedLang !== lang.suffix ? "opacity-50" : ""
+                selectedLang !== null && selectedLang !== lang.suffix ? "opacity-50" : ""
               }`}
             >
-              {isNavigating && selectedLang === lang.suffix ? (
-                <span className="flex items-center gap-2">
-                  <span className="animate-pulse">Loading</span> {lang.name}...
-                </span>
-              ) : (
-                lang.name
-              )}
+              {lang.name}
             </button>
           ))}
         </div>

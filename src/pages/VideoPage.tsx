@@ -5,15 +5,10 @@ import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { VIDEOS_CONFIG } from "@/config/videos";
 import LanguageSelector from "@/components/LanguageSelector";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
 
 const VideoPage = () => {
   const { videoId } = useParams();
   const navigate = useNavigate();
-  
-  // Force a component remount when the URL changes
-  const key = videoId || 'default';
   
   // Check if the URL includes a language suffix
   const baseVideoId = videoId?.split('-')[0];
@@ -24,9 +19,7 @@ const VideoPage = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState("");
-  const [isInitialized, setIsInitialized] = useState(false);
   
   const videoRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -62,11 +55,9 @@ const VideoPage = () => {
   const youtubeId = getYoutubeId();
   
   useEffect(() => {
-    // Reset state when videoId changes
+    // Reset state when component mounts
     setIsLoading(true);
-    setLoadingProgress(0);
     setError("");
-    setIsInitialized(false);
     
     if (!baseVideo) {
       setError("Video not found.");
@@ -80,17 +71,6 @@ const VideoPage = () => {
       return;
     }
     
-    // Simulate a loading progress for better UX
-    const loadingInterval = setInterval(() => {
-      setLoadingProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(loadingInterval);
-          return 90;
-        }
-        return prev + 10;
-      });
-    }, 300);
-    
     const timer = setTimeout(() => {
       setShowControls(false);
     }, 3000);
@@ -99,30 +79,20 @@ const VideoPage = () => {
     const handleMessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("YouTube event:", data);
         
         if (data.event === "onStateChange") {
           if (data.info === 1) { // playing
             setIsPlaying(true);
             setIsLoading(false);
-            setLoadingProgress(100);
-            setIsInitialized(true);
           } else if (data.info === 2) { // paused
             setIsPlaying(false);
           }
         } else if (data.event === "onReady") {
-          console.log("Video is ready");
-          setIsInitialized(true);
-          
           // Try to play the video when it's ready
           if (videoRef.current && videoRef.current.contentWindow) {
             videoRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
           }
-          // Wait a bit to ensure video starts
-          setTimeout(() => {
-            setIsLoading(false);
-            setLoadingProgress(100);
-          }, 1000);
+          setIsLoading(false);
         }
       } catch (e) {
         // Not a parseable message, ignore
@@ -133,39 +103,9 @@ const VideoPage = () => {
     
     return () => {
       clearTimeout(timer);
-      clearInterval(loadingInterval);
       window.removeEventListener('message', handleMessage);
     };
   }, [youtubeId, baseVideo]);
-
-  // Make sure video plays on component mount
-  useEffect(() => {
-    if (!isInitialized) return;
-    
-    // First timeout to ensure iframe is fully loaded
-    const playTimer = setTimeout(() => {
-      console.log("Attempting to play video...");
-      if (videoRef.current && videoRef.current.contentWindow) {
-        videoRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-      }
-    }, 1000);
-    
-    // Second attempt if first one fails
-    const secondAttemptTimer = setTimeout(() => {
-      console.log("Second attempt to play video...");
-      if (videoRef.current && videoRef.current.contentWindow) {
-        videoRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-      }
-      // Force loading to end
-      setIsLoading(false); 
-      setLoadingProgress(100);
-    }, 3000);
-    
-    return () => {
-      clearTimeout(playTimer);
-      clearTimeout(secondAttemptTimer);
-    };
-  }, [isInitialized]);
   
   const handleControlsToggle = () => {
     setShowControls(true);
@@ -214,7 +154,7 @@ const VideoPage = () => {
   }
   
   return (
-    <div className="min-h-screen bg-darkBg flex flex-col" onClick={handleControlsToggle} key={key}>
+    <div className="min-h-screen bg-darkBg flex flex-col" onClick={handleControlsToggle}>
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {baseVideo && (
           <>
@@ -224,11 +164,8 @@ const VideoPage = () => {
               className="video-container relative w-full max-w-4xl bg-black overflow-hidden"
             >
               {isLoading && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-20">
+                <div className="absolute inset-0 flex items-center justify-center bg-black z-20">
                   <LoadingSpinner size={48} />
-                  <div className="w-64 mt-4">
-                    <Progress value={loadingProgress} className="h-2" />
-                  </div>
                 </div>
               )}
               
