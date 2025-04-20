@@ -16,21 +16,23 @@ const VideoPage = () => {
   const baseVideoId = videoId?.split('-')[0];
   const langSuffix = videoId?.includes('-') ? videoId?.split('-')[1] : null;
   
-  // If no language is selected yet, show the language selector
-  if (!langSuffix && baseVideoId) {
-    return <LanguageSelector videoId={baseVideoId} />;
-  }
-
+  // State for video player
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState("");
+  const [isInitialized, setIsInitialized] = useState(false);
   
   const videoRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
+  // If no language is selected yet, show the language selector
+  if (!langSuffix && baseVideoId) {
+    return <LanguageSelector videoId={baseVideoId} />;
+  }
+
   // Get the appropriate video configuration
   const baseVideo = baseVideoId ? VIDEOS_CONFIG[baseVideoId as keyof typeof VIDEOS_CONFIG] : null;
   
@@ -56,6 +58,12 @@ const VideoPage = () => {
   const youtubeId = getYoutubeId();
   
   useEffect(() => {
+    // Reset state when videoId changes
+    setIsLoading(true);
+    setLoadingProgress(0);
+    setError("");
+    setIsInitialized(false);
+    
     if (!baseVideo) {
       setError("Video not found.");
       setIsLoading(false);
@@ -94,18 +102,23 @@ const VideoPage = () => {
             setIsPlaying(true);
             setIsLoading(false);
             setLoadingProgress(100);
+            setIsInitialized(true);
           } else if (data.info === 2) { // paused
             setIsPlaying(false);
           }
         } else if (data.event === "onReady") {
           console.log("Video is ready");
-          setIsLoading(false);
-          setLoadingProgress(100);
+          setIsInitialized(true);
           
           // Try to play the video when it's ready
           if (videoRef.current && videoRef.current.contentWindow) {
             videoRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
           }
+          // Wait a bit to ensure video starts
+          setTimeout(() => {
+            setIsLoading(false);
+            setLoadingProgress(100);
+          }, 1000);
         }
       } catch (e) {
         // Not a parseable message, ignore
@@ -123,6 +136,8 @@ const VideoPage = () => {
 
   // Make sure video plays on component mount
   useEffect(() => {
+    if (!isInitialized) return;
+    
     // First timeout to ensure iframe is fully loaded
     const playTimer = setTimeout(() => {
       console.log("Attempting to play video...");
@@ -137,14 +152,16 @@ const VideoPage = () => {
       if (videoRef.current && videoRef.current.contentWindow) {
         videoRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
       }
-      setIsLoading(false); // Force loading to end after 3 seconds
+      // Force loading to end
+      setIsLoading(false); 
+      setLoadingProgress(100);
     }, 3000);
     
     return () => {
       clearTimeout(playTimer);
       clearTimeout(secondAttemptTimer);
     };
-  }, []);
+  }, [isInitialized]);
   
   const handleControlsToggle = () => {
     setShowControls(true);
@@ -215,16 +232,11 @@ const VideoPage = () => {
               
               <iframe
                 ref={videoRef}
-                className={`w-full h-full pointer-events-none ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+                className={`w-full aspect-video ${isLoading ? 'opacity-0' : 'opacity-100'}`}
                 src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&mute=1&playsinline=1`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 title={baseVideo.title}
-                onLoad={() => {
-                  console.log("iframe loaded");
-                  setIsPlaying(true);
-                  setTimeout(() => setIsLoading(false), 1000);
-                }}
                 style={{ position: 'relative', zIndex: 1 }}
               />
               

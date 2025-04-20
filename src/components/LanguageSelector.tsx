@@ -1,8 +1,8 @@
 
 import { Globe } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { VIDEOS_CONFIG } from "@/config/videos";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface LanguageSelectorProps {
@@ -21,15 +21,19 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
 
   const videoConfig = VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG];
+  
+  useEffect(() => {
+    // Reset navigation state when component mounts or videoId changes
+    setIsNavigating(false);
+    setSelectedLang(null);
+  }, [videoId]);
 
   const handleLanguageSelect = (langSuffix: string) => {
     setIsNavigating(true);
     setSelectedLang(langSuffix);
     
-    // Add a small delay to show the loading state
-    setTimeout(() => {
-      navigate(`/v/${videoId}${langSuffix}`);
-    }, 500);
+    // Use direct navigation rather than timeout to avoid white screen issues
+    navigate(`/v/${videoId}${langSuffix}`);
   };
 
   return (
