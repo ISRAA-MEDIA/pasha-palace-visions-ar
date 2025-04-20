@@ -106,6 +106,20 @@ iframe[src*="youtube"] {
   border: none !important;
 }
 
+/* Hide specific YouTube elements */
+.ytp-chrome-top,
+.ytp-show-cards-title,
+.ytp-large-play-button,
+.ytp-button,
+.ytp-large-play-button-red-bg,
+.ytp-watermark,
+.yt-uix-sessionlink,
+.ytp-watermark-small {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
 /* Player controls styling */
 .player-controls {
   position: absolute;
