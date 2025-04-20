@@ -1,9 +1,18 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@400;500;600&display=swap');
+
+@layer base {
+  body {
+    background-image: url('/lovable-uploads/12a6813d-455a-439d-97d4-b544ee341833.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+}
 
 @layer base {
   :root {
