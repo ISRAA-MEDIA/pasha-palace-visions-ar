@@ -35,10 +35,15 @@ export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
     title: 'The Ancient Library',
     description: 'Home to thousands of rare manuscripts and historical documents',
   },
-  'shorts': {
+  'pasha': {
     youtubeId: 'Z0cDwBdAC5o',
     title: 'Museum Shorts',
     description: 'A quick glimpse into our museum experience',
+    languages: {
+      en: 'Z0cDwBdAC5o',
+      fr: 'Z0cDwBdAC5o',
+      ar: 'Z0cDwBdAC5o',
+    }
   },
   'secret-passage': {
     youtubeId: 'BVPp8DLmdb0',
