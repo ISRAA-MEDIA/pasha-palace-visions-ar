@@ -1,10 +1,9 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { VIDEOS_CONFIG } from "@/config/videos";
 import LanguageSelector from "@/components/LanguageSelector";
-import LoadingSpinner from "@/components/LoadingSpinner";
+// Remove LoadingSpinner import since we're removing the loading state
 
 const VideoPage = () => {
   const { videoId } = useParams();
@@ -18,7 +17,7 @@ const VideoPage = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+  // Remove isLoading state
   const [error, setError] = useState("");
   
   const videoRef = useRef<HTMLIFrameElement>(null);
@@ -55,19 +54,15 @@ const VideoPage = () => {
   const youtubeId = getYoutubeId();
   
   useEffect(() => {
-    // Reset state when component mounts
-    setIsLoading(true);
-    setError("");
+    // Remove initial loading state setup
     
     if (!baseVideo) {
       setError("Video not found.");
-      setIsLoading(false);
       return;
     }
     
     if (!youtubeId) {
       setError("Video for this language not found.");
-      setIsLoading(false);
       return;
     }
     
@@ -83,16 +78,9 @@ const VideoPage = () => {
         if (data.event === "onStateChange") {
           if (data.info === 1) { // playing
             setIsPlaying(true);
-            setIsLoading(false);
           } else if (data.info === 2) { // paused
             setIsPlaying(false);
           }
-        } else if (data.event === "onReady") {
-          // Try to play the video when it's ready
-          if (videoRef.current && videoRef.current.contentWindow) {
-            videoRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-          }
-          setIsLoading(false);
         }
       } catch (e) {
         // Not a parseable message, ignore
@@ -163,17 +151,13 @@ const VideoPage = () => {
               ref={containerRef}
               className="video-container relative w-full max-w-4xl bg-black overflow-hidden"
             >
-              {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black z-20">
-                  <LoadingSpinner size={48} />
-                </div>
-              )}
+              
               
               <div className="absolute inset-0 z-10 pointer-events-none bg-black/5"></div>
               
               <iframe
                 ref={videoRef}
-                className={`w-full aspect-video ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+                className="w-full aspect-video"
                 src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&mute=1&playsinline=1`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
