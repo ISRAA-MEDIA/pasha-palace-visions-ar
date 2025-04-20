@@ -2,16 +2,27 @@
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import { VIDEOS_CONFIG } from "@/config/videos";
-import { generateSecureToken } from "@/utils/qrGenerator";
+import { generateRotatingToken } from "@/utils/qrGenerator";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 const GenerateQRPage = () => {
   const [selectedVideo, setSelectedVideo] = useState<string>("");
   
   const generateQRUrl = (videoId: string) => {
-    const token = generateSecureToken(videoId);
+    const token = generateRotatingToken(videoId);
     return `v/${videoId}/${token}`;
+  };
+  
+  const handleCopyQRCode = (videoId: string) => {
+    const qrUrl = generateQRUrl(videoId);
+    navigator.clipboard.writeText(`${window.location.origin}/${qrUrl}`).then(() => {
+      toast({
+        title: "QR Code URL Copied",
+        description: "The full QR code URL has been copied to clipboard."
+      });
+    });
   };
   
   return (
@@ -27,16 +38,26 @@ const GenerateQRPage = () => {
         <div className="space-y-8">
           <div className="grid gap-4">
             {Object.entries(VIDEOS_CONFIG).map(([id, config]) => (
-              <button
-                key={id}
-                onClick={() => setSelectedVideo(id)}
-                className={`p-4 rounded-lg text-left transition-all ${
+              <div 
+                key={id} 
+                className={`p-4 rounded-lg text-left transition-all flex justify-between items-center ${
                   selectedVideo === id ? 'bg-gold/20 border border-gold' : 'bg-black/30 hover:bg-black/50'
                 }`}
               >
-                <h3 className="font-playfair text-lg mb-1">{config.title}</h3>
-                <p className="text-sm text-gray-400">{config.description}</p>
-              </button>
+                <div onClick={() => setSelectedVideo(id)} className="cursor-pointer flex-grow">
+                  <h3 className="font-playfair text-lg mb-1">{config.title}</h3>
+                  <p className="text-sm text-gray-400">{config.description}</p>
+                </div>
+                {selectedVideo === id && (
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    onClick={() => handleCopyQRCode(id)}
+                  >
+                    Copy QR URL
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
           
@@ -54,7 +75,7 @@ const GenerateQRPage = () => {
                 />
               </div>
               <p className="mt-4 text-sm text-gray-400 text-center">
-                Scan this QR code to view the video on a mobile device
+                Scan this QR code to view the video. Codes rotate every 24 hours for security.
               </p>
             </div>
           )}

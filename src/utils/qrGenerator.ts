@@ -1,4 +1,3 @@
-
 /**
  * QR Code Generation Utility
  * 
@@ -6,14 +5,23 @@
  */
 
 // A secure token generation function that simulates JWT
-export const generateSecureToken = (videoId: string, expiryHours = 24): string => {
+export const generateSecureToken = (
+  videoId: string, 
+  expiryHours = 24, 
+  salt = ''
+): string => {
   // Create a header (in a real JWT this would be algorithm info)
-  const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+  const header = btoa(JSON.stringify({ 
+    alg: "HS256", 
+    typ: "JWT", 
+    salt: salt 
+  }));
   
   // Create a payload with the video ID and expiration time
   const payload = btoa(JSON.stringify({
     vid: videoId,
-    exp: Date.now() + (expiryHours * 60 * 60 * 1000)
+    exp: Date.now() + (expiryHours * 60 * 60 * 1000),
+    salt: salt
   }));
   
   // In a real app, you'd create a proper signature with a secret key
@@ -21,6 +29,23 @@ export const generateSecureToken = (videoId: string, expiryHours = 24): string =
   const signature = btoa(`${header}.${payload}.SECRET_KEY`);
   
   return `${header}.${payload}.${signature}`;
+};
+
+export const generateRotatingToken = (
+  videoId: string, 
+  rotationPeriod: number = 24 // hours
+): string => {
+  // Use a consistent salt based on the current rotation period
+  const currentRotationWindow = Math.floor(Date.now() / (rotationPeriod * 60 * 60 * 1000));
+  
+  // Generate a token that changes predictably every rotation period
+  const token = generateSecureToken(
+    videoId, 
+    rotationPeriod, 
+    `rotation_salt_${currentRotationWindow}`
+  );
+  
+  return token;
 };
 
 export interface QRCodeData {
