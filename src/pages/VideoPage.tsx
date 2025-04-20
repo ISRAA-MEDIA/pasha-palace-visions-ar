@@ -1,20 +1,44 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { VIDEOS_CONFIG } from "@/config/videos";
+
+const validateToken = (token: string | undefined, videoId: string | undefined): boolean => {
+  if (!token || !videoId) return false;
+  
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    
+    const payload = JSON.parse(atob(parts[1]));
+    
+    return (
+      payload.vid === videoId && 
+      payload.exp > Date.now()
+    );
+  } catch (e) {
+    console.error("Token validation error:", e);
+    return false;
+  }
+};
 
 const VideoPage = () => {
   const { videoId } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [videoStarted, setVideoStarted] = useState(false);
   
   const videoRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     const videoConfig = videoId ? VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG] : null;
@@ -29,11 +53,18 @@ const VideoPage = () => {
       setShowControls(false);
     }, 3000);
     
+    // Add message listener for YouTube API events
     const handleMessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
         if (data.event === "onStateChange") {
-          setIsPlaying(data.info === 1);
+          // YouTube player state has changed
+          if (data.info === 1) { // playing
+            setIsPlaying(true);
+            setVideoStarted(true);
+          } else if (data.info === 2) { // paused
+            setIsPlaying(false);
+          }
         }
       } catch (e) {
         // Not a parseable message, ignore
@@ -58,13 +89,12 @@ const VideoPage = () => {
   };
   
   const handlePlayPause = () => {
-    const newState = !isPlaying;
-    setIsPlaying(newState);
+    setIsPlaying(!isPlaying);
     
     try {
       const iframe = videoRef.current;
       if (iframe && iframe.contentWindow) {
-        const func = newState ? 'playVideo' : 'pauseVideo';
+        const func = isPlaying ? 'pauseVideo' : 'playVideo';
         iframe.contentWindow.postMessage(`{"event":"command","func":"${func}","args":""}`, '*');
       }
     } catch (e) {
@@ -73,13 +103,12 @@ const VideoPage = () => {
   };
   
   const handleMuteToggle = () => {
-    const newState = !isMuted;
-    setIsMuted(newState);
+    setIsMuted(!isMuted);
     
     try {
       const iframe = videoRef.current;
       if (iframe && iframe.contentWindow) {
-        const func = newState ? 'mute' : 'unMute';
+        const func = isMuted ? 'unMute' : 'mute';
         iframe.contentWindow.postMessage(`{"event":"command","func":"${func}","args":""}`, '*');
       }
     } catch (e) {
@@ -101,9 +130,7 @@ const VideoPage = () => {
     return (
       <div className="min-h-screen bg-darkBg flex flex-col items-center justify-center text-center p-6">
         <div className="text-red-500 mb-4">{error}</div>
-        <button onClick={() => navigate("/")} className="text-gold underline hover:text-gold/80">
-          Return to Home
-        </button>
+        <Link to="/" className="text-gold underline hover:text-gold/80">Return to Home</Link>
       </div>
     );
   }
@@ -114,26 +141,45 @@ const VideoPage = () => {
         {videoConfig && (
           <>
             <h1 className="text-gold text-2xl font-playfair mb-4">{videoConfig.title}</h1>
-            <div className="video-container relative w-full max-w-4xl">
+            <div 
+              ref={containerRef}
+              className={`video-container relative w-full ${isMobile ? 'max-w-full' : 'max-w-4xl'} bg-black overflow-hidden`}
+            >
+              <div className="absolute inset-0 z-10 pointer-events-none bg-black/5"></div>
+              
               <iframe
                 ref={videoRef}
+                className="w-full h-full"
                 src={`https://www.youtube-nocookie.com/embed/${videoConfig.youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${videoConfig.youtubeId}&loop=1&autoplay=0&color=white&cc_load_policy=0`}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 title={videoConfig.title}
+                onLoad={() => setIsPlaying(true)}
+                style={{ position: 'relative', zIndex: 1 }}
               ></iframe>
               
-              <div className={`player-controls ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-                <button onClick={() => navigate("/")} className="control-btn">
+              {!videoStarted && (
+                <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/70">
+                  <button 
+                    onClick={handlePlayPause} 
+                    className="bg-gold/80 hover:bg-gold text-white p-4 rounded-full transition-all"
+                  >
+                    <Play size={32} />
+                  </button>
+                </div>
+              )}
+              
+              <div className={`player-controls absolute bottom-0 left-0 right-0 bg-black/50 p-3 flex justify-between items-center transition-opacity duration-300 z-30 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+                <button onClick={() => navigate("/")} className="control-btn p-2 text-white hover:text-gold">
                   <Home size={24} />
                 </button>
                 
                 <div className="flex gap-4">
-                  <button onClick={handlePlayPause} className="control-btn">
+                  <button onClick={handlePlayPause} className="control-btn p-2 text-white hover:text-gold">
                     {isPlaying ? <Pause size={24} /> : <Play size={24} />}
                   </button>
                   
-                  <button onClick={handleMuteToggle} className="control-btn">
+                  <button onClick={handleMuteToggle} className="control-btn p-2 text-white hover:text-gold">
                     {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
                   </button>
                 </div>
