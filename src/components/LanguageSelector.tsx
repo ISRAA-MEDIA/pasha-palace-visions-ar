@@ -1,6 +1,7 @@
 
 import { Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { VIDEOS_CONFIG } from "@/config/videos";
 
 interface LanguageSelectorProps {
   videoId: string;
@@ -14,6 +15,7 @@ const languages = [
 
 const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
   const navigate = useNavigate();
+  const videoConfig = VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG];
 
   return (
     <div className="min-h-screen bg-darkBg flex flex-col items-center justify-center p-6">
@@ -24,6 +26,7 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
           </div>
           <h1 className="text-2xl font-playfair text-gold mb-2">Choose Your Language</h1>
           <p className="text-gray-400">Select your preferred language to continue</p>
+          {videoConfig && <p className="text-gold mt-2">{videoConfig.title}</p>}
         </div>
 
         <div className="space-y-3">

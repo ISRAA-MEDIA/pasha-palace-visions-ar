@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
@@ -10,15 +11,15 @@ const VideoPage = () => {
   
   // Check if the URL includes a language suffix
   const baseVideoId = videoId?.split('-')[0];
-  const hasLanguage = videoId?.includes('-');
+  const langSuffix = videoId?.includes('-') ? videoId?.split('-')[1] : null;
   
   // If no language is selected yet, show the language selector
-  if (!hasLanguage && baseVideoId) {
+  if (!langSuffix && baseVideoId) {
     return <LanguageSelector videoId={baseVideoId} />;
   }
 
-  const [isPlaying, setIsPlaying] = useState(true); // Already set to true for autoplay
-  const [isMuted, setIsMuted] = useState(true); // Set to true to enable autoplay (browsers require muting)
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,11 +27,38 @@ const VideoPage = () => {
   const videoRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
+  // Get the appropriate video configuration
+  const baseVideo = baseVideoId ? VIDEOS_CONFIG[baseVideoId] : null;
+  
+  // Determine which YouTube ID to use based on language
+  const getYoutubeId = () => {
+    if (!baseVideo) return null;
+    
+    // If we have a language suffix and the video has language options
+    if (langSuffix && baseVideo.languages) {
+      if (langSuffix === 'en' && baseVideo.languages.en) {
+        return baseVideo.languages.en;
+      } else if (langSuffix === 'fr' && baseVideo.languages.fr) {
+        return baseVideo.languages.fr;
+      } else if (langSuffix === 'ar' && baseVideo.languages.ar) {
+        return baseVideo.languages.ar;
+      }
+    }
+    
+    // Default to the main youtubeId if no language match or no language options
+    return baseVideo.youtubeId;
+  };
+  
+  const youtubeId = getYoutubeId();
+  
   useEffect(() => {
-    const currentVideoId = videoId?.split('-')[0]; // Get base video ID without language
-    const videoConfig = currentVideoId ? VIDEOS_CONFIG[currentVideoId as keyof typeof VIDEOS_CONFIG] : null;
-    if (!videoConfig) {
+    if (!baseVideo) {
       setError("Video not found.");
+      return;
+    }
+    
+    if (!youtubeId) {
+      setError("Video for this language not found.");
       return;
     }
     
@@ -62,7 +90,7 @@ const VideoPage = () => {
       clearTimeout(timer);
       window.removeEventListener('message', handleMessage);
     };
-  }, [videoId]);
+  }, [youtubeId, baseVideo]);
 
   // Make sure video plays on component mount
   useEffect(() => {
@@ -113,8 +141,6 @@ const VideoPage = () => {
     }
   };
   
-  const videoConfig = videoId ? VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG] : null;
-  
   if (isLoading) {
     return (
       <div className="min-h-screen bg-darkBg flex items-center justify-center">
@@ -135,9 +161,9 @@ const VideoPage = () => {
   return (
     <div className="min-h-screen bg-darkBg flex flex-col" onClick={handleControlsToggle}>
       <div className="flex-1 flex flex-col items-center justify-center p-4">
-        {videoConfig && (
+        {baseVideo && (
           <>
-            <h1 className="text-gold text-2xl font-playfair mb-4">{videoConfig.title}</h1>
+            <h1 className="text-gold text-2xl font-playfair mb-4">{baseVideo.title}</h1>
             <div 
               ref={containerRef}
               className="video-container relative w-full max-w-4xl bg-black overflow-hidden"
@@ -147,10 +173,10 @@ const VideoPage = () => {
               <iframe
                 ref={videoRef}
                 className="w-full h-full pointer-events-none"
-                src={`https://www.youtube-nocookie.com/embed/${videoConfig.youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${videoConfig.youtubeId}&loop=1&autoplay=1&mute=1`}
+                src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&mute=1`}
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
-                title={videoConfig.title}
+                title={baseVideo.title}
                 onLoad={() => setIsPlaying(true)}
                 style={{ position: 'relative', zIndex: 1 }}
               />
@@ -171,7 +197,7 @@ const VideoPage = () => {
                 </div>
               </div>
             </div>
-            <p className="text-white text-center mt-4 max-w-md">{videoConfig.description}</p>
+            <p className="text-white text-center mt-4 max-w-md">{baseVideo.description}</p>
           </>
         )}
       </div>
