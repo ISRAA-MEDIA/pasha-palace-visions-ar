@@ -1,4 +1,3 @@
-
 export interface VideoConfig {
   youtubeId: string;
   title: string;
@@ -30,5 +29,10 @@ export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
     youtubeId: 'Z0cDwBdAC5o',
     title: 'Museum Shorts',
     description: 'A quick glimpse into our museum experience',
+  },
+  'secret-passage': {
+    youtubeId: 'BVPp8DLmdb0',
+    title: 'The Hidden Passage',
+    description: 'A glimpse into a secret corridor rarely seen by visitors',
   }
 };
