@@ -1,13 +1,22 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { VIDEOS_CONFIG } from "@/config/videos";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const VideoPage = () => {
   const { videoId } = useParams();
   const navigate = useNavigate();
   
+  // Check if the URL includes a language suffix
+  const baseVideoId = videoId?.split('-')[0];
+  const hasLanguage = videoId?.includes('-');
+  
+  // If no language is selected yet, show the language selector
+  if (!hasLanguage && baseVideoId) {
+    return <LanguageSelector videoId={baseVideoId} />;
+  }
+
   const [isPlaying, setIsPlaying] = useState(true); // Already set to true for autoplay
   const [isMuted, setIsMuted] = useState(true); // Set to true to enable autoplay (browsers require muting)
   const [showControls, setShowControls] = useState(true);
@@ -18,7 +27,8 @@ const VideoPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    const videoConfig = videoId ? VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG] : null;
+    const currentVideoId = videoId?.split('-')[0]; // Get base video ID without language
+    const videoConfig = currentVideoId ? VIDEOS_CONFIG[currentVideoId as keyof typeof VIDEOS_CONFIG] : null;
     if (!videoConfig) {
       setError("Video not found.");
       return;

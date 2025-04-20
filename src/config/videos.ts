@@ -2,6 +2,11 @@ export interface VideoConfig {
   youtubeId: string;
   title: string;
   description: string;
+  languages?: {
+    en: string;
+    fr: string;
+    ar: string;
+  };
 }
 
 export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
@@ -9,6 +14,11 @@ export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
     youtubeId: 'dQw4w9WgXcQ',
     title: 'The Grand Hall',
     description: 'Discover the ornate details of the main reception hall',
+    languages: {
+      en: 'dQw4w9WgXcQ',
+      fr: 'dQw4w9WgXcQ',
+      ar: 'dQw4w9WgXcQ',
+    }
   },
   'dining': {
     youtubeId: 'wuQEFQ7oZzk',
