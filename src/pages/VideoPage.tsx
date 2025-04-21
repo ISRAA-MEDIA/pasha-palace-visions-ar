@@ -13,11 +13,10 @@ const VideoPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  // Check if the URL includes a language suffix
   const baseVideoId = videoId?.split('-')[0];
   const langSuffix = videoId?.includes('-') ? videoId?.substring(videoId.indexOf('-')) : null;
   
-  // State for video player
+  // Changed initial isMuted to false to start unmuted
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -27,21 +26,17 @@ const VideoPage = () => {
   const videoRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // If no language is selected yet, show the language selector
   if (!langSuffix && baseVideoId) {
     return <LanguageSelector videoId={baseVideoId} />;
   }
 
-  // Get the appropriate video configuration
   const baseVideo = baseVideoId ? VIDEOS_CONFIG[baseVideoId as keyof typeof VIDEOS_CONFIG] : null;
   
-  // Determine which YouTube ID to use based on language
   const getYoutubeId = () => {
     if (!baseVideo) return null;
     
-    // If we have a language suffix and the video has language options
     if (langSuffix && baseVideo.languages) {
-      const lang = langSuffix.substring(1); // Remove the '-' character
+      const lang = langSuffix.substring(1);
       if (lang === 'en' && baseVideo.languages.en) {
         return baseVideo.languages.en;
       } else if (lang === 'fr' && baseVideo.languages.fr) {
@@ -50,8 +45,6 @@ const VideoPage = () => {
         return baseVideo.languages.ar;
       }
     }
-    
-    // Default to the main youtubeId if no language match or no language options
     return baseVideo.youtubeId;
   };
   
@@ -72,32 +65,28 @@ const VideoPage = () => {
       setShowControls(false);
     }, 3000);
     
-    // Add message listener for YouTube API events
     const handleMessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
         
         if (data.event === "onStateChange") {
-          if (data.info === 1) { // playing
+          if (data.info === 1) {
             setIsPlaying(true);
             setIsLoaded(true);
-          } else if (data.info === 2) { // paused
+          } else if (data.info === 2) {
             setIsPlaying(false);
           }
         }
-        
-        // Listen for ready event
+
         if (data.event === "onReady") {
           setIsLoaded(true);
         }
       } catch (e) {
-        // Not a parseable message, ignore
       }
     };
     
     window.addEventListener('message', handleMessage);
     
-    // Force isLoaded to true after a timeout for fallback
     const loadTimeout = setTimeout(() => {
       setIsLoaded(true);
     }, 1500);
@@ -180,24 +169,22 @@ const VideoPage = () => {
                 width: isMobile ? '100%' : 'auto',
               }}
             >
-              {/* Loading placeholder */}
               {!isLoaded && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
                   <LoadingSpinner size={48} />
                 </div>
               )}
               
-              {/* Protective overlay to prevent using YouTube controls */}
               <div className="absolute inset-0 z-20 pointer-events-auto"></div>
               
-              {/* Video styling overlay */}
               <div className="absolute inset-0 z-10 pointer-events-none bg-black/5"></div>
               
               <AspectRatio ratio={9/16} className="w-full h-full">
                 <iframe
                   ref={videoRef}
                   className="w-full h-full"
-                  src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&mute=1&playsinline=1`}
+                  // Removed &mute=1 from URL to start unmuted
+                  src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&playsinline=1`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   title={baseVideo.title}
@@ -232,3 +219,4 @@ const VideoPage = () => {
 };
 
 export default VideoPage;
+
