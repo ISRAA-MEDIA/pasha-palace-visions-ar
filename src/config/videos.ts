@@ -59,7 +59,7 @@ export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
     }
   },
   'exhibit07': {
-    youtubeId: 'OvROG_LWmcM',
+    youtubeId: 'ZyhVQucmIsw',
     languages: {
       ar: 'ZyhVQucmIsw',
       en: 'JL-8FybUyLg',
@@ -91,7 +91,12 @@ export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
     }
   },
   'exhibit11': {
-    youtubeId: '',
+    youtubeId: 'OvROG_LWmcM',
+    languages: {
+      ar: 'OvROG_LWmcM',
+      en: 'zrF_FIjHf0c',
+      fr: 'hK7oA2guB_I'
+    }
   },
   'exhibit12': {
     youtubeId: '',
