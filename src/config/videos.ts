@@ -15,9 +15,9 @@ export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
     title: 'The Grand Hall',
     description: 'Discover the ornate details of the main reception hall',
     languages: {
-      en: 'Z0cDwBdAC5o',
-      fr: 'Z0cDwBdAC5o',
-      ar: 'Z0cDwBdAC5o',
+      en: 'ipbsTRR-a3s',
+      fr: 'ipbsTRR-a3s',
+      ar: 'ipbsTRR-a3s',
     }
   },
   'dining': {
