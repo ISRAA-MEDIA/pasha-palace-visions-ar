@@ -6,6 +6,7 @@ import { VIDEOS_CONFIG } from "@/config/videos";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const VideoPage = () => {
   const { videoId } = useParams();
@@ -21,6 +22,7 @@ const VideoPage = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const [error, setError] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
   
   const videoRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,9 +80,15 @@ const VideoPage = () => {
         if (data.event === "onStateChange") {
           if (data.info === 1) { // playing
             setIsPlaying(true);
+            setIsLoaded(true);
           } else if (data.info === 2) { // paused
             setIsPlaying(false);
           }
+        }
+        
+        // Listen for ready event
+        if (data.event === "onReady") {
+          setIsLoaded(true);
         }
       } catch (e) {
         // Not a parseable message, ignore
@@ -89,8 +97,14 @@ const VideoPage = () => {
     
     window.addEventListener('message', handleMessage);
     
+    // Force isLoaded to true after a timeout for fallback
+    const loadTimeout = setTimeout(() => {
+      setIsLoaded(true);
+    }, 1500);
+    
     return () => {
       clearTimeout(timer);
+      clearTimeout(loadTimeout);
       window.removeEventListener('message', handleMessage);
     };
   }, [youtubeId, baseVideo]);
@@ -142,22 +156,41 @@ const VideoPage = () => {
   }
   
   return (
-    <div className="min-h-screen bg-darkBg flex flex-col" onClick={handleControlsToggle}>
-      <div className="flex-1 flex flex-col items-center justify-center p-4">
+    <div 
+      className="min-h-screen bg-darkBg flex flex-col" 
+      onClick={handleControlsToggle}
+      style={{ 
+        backgroundImage: 'url("/museum-background.jpg")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <div className="flex-1 flex flex-col items-center justify-center p-4 relative z-10">
+        <div className="absolute inset-0 bg-black opacity-50 -z-10"></div>
+        
         {baseVideo && (
           <>
-            <h1 className="text-gold text-2xl font-playfair mb-4">{baseVideo.title}</h1>
+            <h1 className="text-gold text-2xl font-playfair mb-4 fade-in">{baseVideo.title}</h1>
             <div 
               ref={containerRef}
-              className="video-container relative w-full max-w-4xl bg-black overflow-hidden"
+              className={`video-container relative w-full max-w-4xl bg-black overflow-hidden ${isLoaded ? "loaded" : ""}`}
               style={{ 
                 maxHeight: '80vh',
                 width: isMobile ? '100%' : 'auto',
               }}
             >
+              {/* Loading placeholder */}
+              {!isLoaded && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
+                  <LoadingSpinner size={48} />
+                </div>
+              )}
+              
               {/* Protective overlay to prevent using YouTube controls */}
               <div className="absolute inset-0 z-20 pointer-events-auto"></div>
               
+              {/* Video styling overlay */}
               <div className="absolute inset-0 z-10 pointer-events-none bg-black/5"></div>
               
               <AspectRatio ratio={9/16} className="w-full h-full">
@@ -188,7 +221,9 @@ const VideoPage = () => {
                 </div>
               </div>
             </div>
-            <p className="text-white text-center mt-4 max-w-md">{baseVideo.description}</p>
+            <p className="text-white text-center mt-4 max-w-md bg-black/30 p-3 rounded-lg fade-in">
+              {baseVideo.description}
+            </p>
           </>
         )}
       </div>

@@ -10,8 +10,8 @@ interface LanguageSelectorProps {
 
 const languages = [
   { code: "ar", name: "العربية", suffix: "-ar" },   // Arabic first
-  { code: "en", name: "English", suffix: "-en" },  // English second
-  { code: "fr", name: "Français", suffix: "-fr" }, // French last
+  { code: "en", name: "English", suffix: "-en" },   // English second
+  { code: "fr", name: "Français", suffix: "-fr" },  // French third
 ];
 
 const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
@@ -30,20 +30,21 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
     <div 
       className="min-h-screen flex flex-col items-center justify-center p-6 relative"
       style={{ 
-        backgroundImage: 'url("/lovable-uploads/3603e013-56e2-48fb-bac7-640fb28a24e9.png")',
+        backgroundImage: 'url("/museum-background.jpg")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="absolute inset-0 bg-black opacity-50"></div>
+      <div className="absolute inset-0 bg-black opacity-70"></div>
       <div className="max-w-md w-full text-center relative z-10">
         <div className="mb-8">
-          <div className="mx-auto w-16 h-16 bg-gold/20 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-16 h-16 bg-gold/20 rounded-full flex items-center justify-center mb-4 fade-in">
             <Globe size={32} className="text-gold" />
           </div>
-          <h1 className="text-2xl font-playfair text-gold mb-2">Choose Your Language</h1>
-          <p className="text-gray-400">Select your preferred language to continue</p>
-          {videoConfig && <p className="text-gold mt-2">{videoConfig.title}</p>}
+          <h1 className="text-2xl font-playfair text-gold mb-2 fade-in">Choose Your Language</h1>
+          <p className="text-gray-300 fade-in">Select your preferred language to continue</p>
+          {videoConfig && <p className="text-gold mt-2 fade-in">{videoConfig.title}</p>}
         </div>
 
         <div className="space-y-3">
@@ -55,10 +56,10 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
               className={`w-full py-4 px-6 ${
                 selectedLang === lang.suffix
                   ? "bg-gold/30"
-                  : "bg-black/30 hover:bg-black/40"
+                  : "bg-black/50 hover:bg-black/70"
               } text-white rounded-lg transition-all flex items-center justify-center gap-3 ${
                 selectedLang !== null && selectedLang !== lang.suffix ? "opacity-50" : ""
-              }`}
+              } fade-in`}
             >
               {lang.name}
             </button>
