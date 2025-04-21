@@ -1,12 +1,12 @@
 
 import { QRCodeSVG } from "qrcode.react";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { VIDEOS_CONFIG } from "@/config/videos";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 import ReactDOM from "react-dom";
 import { generateExhibitQRData } from "@/utils/qrGenerator";
 
@@ -25,113 +25,52 @@ const GenerateQRPage = () => {
     });
   };
 
-  /**
-   * Download all QRs as a single multi-page PDF ("exhibit0x.pdf"), each page
-   * having the QR code and exhibit name below it.
-   */
+  // Download all QR codes as ZIP
   const handleDownloadAllQRCodes = async () => {
-    const exhibitEntries = Object.entries(VIDEOS_CONFIG).filter(
-      ([, config]) => !!config.youtubeId // Only for configured exhibits
-    );
-    if (exhibitEntries.length === 0) {
-      toast({
-        title: "No QRs",
-        description: "No exhibits are configured for PDF export.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "PDF Generating",
-      description: "Generating a PDF, please wait...",
-    });
-
-    // PDF config (A4, portrait), margins for pretty layout
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "pt",
-      format: "a4",
-    });
-
-    // Prepare a hidden div to render QR+text for canvas snapshot
-    const renderDiv = document.createElement("div");
-    renderDiv.style.position = "fixed";
-    renderDiv.style.left = "-9999px";
-    document.body.appendChild(renderDiv);
-
-    for (let i = 0; i < exhibitEntries.length; i++) {
-      const [id] = exhibitEntries[i];
-      // Compose QR code + label layout
-      const pageDiv = document.createElement("div");
-      pageDiv.style.width = "400px";
-      pageDiv.style.height = "550px";
-      pageDiv.style.display = "flex";
-      pageDiv.style.flexDirection = "column";
-      pageDiv.style.alignItems = "center";
-      pageDiv.style.justifyContent = "center";
-      pageDiv.style.background = "white";
-
-      // Render QR code to virtual DOM
-      const qrContainer = document.createElement("div");
-      qrContainer.style.padding = "20px";
-      qrContainer.style.background = "white";
+    const zip = new JSZip();
+    const qrFolder = zip.folder("qr-codes");
+    
+    for (const [id] of Object.entries(VIDEOS_CONFIG)) {
+      const url = `${window.location.origin}/${generateQRUrl(id)}`;
+      
+      // Create a QR code SVG using the library directly
+      const svgElement = document.createElement('div');
+      document.body.appendChild(svgElement);
+      
+      // Use imported ReactDOM instead of require
       ReactDOM.render(
-        <QRCodeSVG
-          value={`${window.location.origin}/${generateQRUrl(id)}`}
-          size={250}
+        <QRCodeSVG 
+          value={url}
+          size={200}
           level="H"
           includeMargin={true}
-        />,
-        qrContainer
+          style={{ background: 'white', padding: '10px' }}
+        />, 
+        svgElement
       );
-      pageDiv.appendChild(qrContainer);
-
-      // Label under QR
-      const label = document.createElement("div");
-      label.innerText = `Exhibit ${id.replace("exhibit", "").padStart(2, "0")}`;
-      label.style.marginTop = "16px";
-      label.style.fontSize = "18px";
-      label.style.color = "#666";
-      label.style.textAlign = "center";
-      label.style.fontFamily = "'Playfair Display', serif";
-      pageDiv.appendChild(label);
-
-      // Clear div and put pageDiv inside
-      renderDiv.innerHTML = "";
-      renderDiv.appendChild(pageDiv);
-
-      // Snapshot (canvas)
-      // eslint-disable-next-line no-await-in-loop
-      const canvas = await html2canvas(pageDiv, {
-        scale: 2,
-        backgroundColor: "#fff",
-        useCORS: true,
-      });
-      const imgData = canvas.toDataURL("image/png");
-
-      // Add image to PDF (centered)
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = 250 * 1.6; // 250px QR * scale factor
-      const imgHeight = 320 * 1.4; // heuristic: covers QR + label
-      const x = (pageWidth - imgWidth) / 2;
-      const y = (pageHeight - imgHeight) / 2.5;
-
-      if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
-
-      // Clean up QR
-      ReactDOM.unmountComponentAtNode(qrContainer);
+      
+      // Convert the SVG to a string properly
+      const svg = svgElement.querySelector('svg');
+      const serializer = new XMLSerializer();
+      let svgString = serializer.serializeToString(svg);
+      
+      // Clean up DOM
+      document.body.removeChild(svgElement);
+      
+      // Add title inside the SVG properly
+      svgString = svgString.replace('</svg>', `<text x="100" y="220" text-anchor="middle" font-size="12" fill="#666">Exhibit: ${id}</text></svg>`);
+      
+      // Add the SVG to the zip file
+      if (qrFolder) {
+        qrFolder.file(`${id}.svg`, svgString);
+      }
     }
-    // Clean up render div
-    document.body.removeChild(renderDiv);
-
-    // Save PDF with one label, regardless of which exhibits are present
-    pdf.save("exhibits.pdf");
+    
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, "qr-codes.zip");
     toast({
       title: "Download Started",
-      description: "Exported all QR codes as a single PDF.",
+      description: "Downloading all QR codes in a zip file.",
     });
   };
 
