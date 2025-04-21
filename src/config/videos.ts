@@ -11,13 +11,13 @@ export interface VideoConfig {
 
 export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
   'sample': {
-    youtubeId: 'dQw4w9WgXcQ',
+    youtubeId: 'Z0cDwBdAC5o',
     title: 'The Grand Hall',
     description: 'Discover the ornate details of the main reception hall',
     languages: {
-      en: 'dQw4w9WgXcQ',
-      fr: 'dQw4w9WgXcQ',
-      ar: 'dQw4w9WgXcQ',
+      en: 'Z0cDwBdAC5o',
+      fr: 'Z0cDwBdAC5o',
+      ar: 'Z0cDwBdAC5o',
     }
   },
   'dining': {
