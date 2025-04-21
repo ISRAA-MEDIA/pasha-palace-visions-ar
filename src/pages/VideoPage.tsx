@@ -16,38 +16,26 @@ const VideoPage = () => {
   const baseVideoId = videoId?.split('-')[0];
   const langSuffix = videoId?.includes('-') ? videoId?.substring(videoId.indexOf('-')) : null;
   
+  // Changed initial isMuted to false to start unmuted
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [error, setError] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
-  const [playerReady, setPlayerReady] = useState(false);
   
   const videoRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  if (!baseVideoId) {
-    return <div className="min-h-screen bg-darkBg flex items-center justify-center">
-      <div className="text-red-500">Video ID not found.</div>
-    </div>;
+  if (!langSuffix && baseVideoId) {
+    return <LanguageSelector videoId={baseVideoId} />;
   }
-  
-  // Skip language selector and directly use the base video if no language suffix
-  const baseVideo = VIDEOS_CONFIG[baseVideoId as keyof typeof VIDEOS_CONFIG];
-  if (!baseVideo) {
-    return <div className="min-h-screen bg-darkBg flex items-center justify-center">
-      <div className="text-red-500">Video configuration not found.</div>
-    </div>;
-  }
+
+  const baseVideo = baseVideoId ? VIDEOS_CONFIG[baseVideoId as keyof typeof VIDEOS_CONFIG] : null;
   
   const getYoutubeId = () => {
-    // If no language suffix provided, just use the base video ID
-    if (!langSuffix) {
-      return baseVideo.youtubeId; 
-    }
+    if (!baseVideo) return null;
     
-    // If language suffix exists, try to get that language version
-    if (baseVideo.languages) {
+    if (langSuffix && baseVideo.languages) {
       const lang = langSuffix.substring(1);
       if (lang === 'en' && baseVideo.languages.en) {
         return baseVideo.languages.en;
@@ -57,16 +45,19 @@ const VideoPage = () => {
         return baseVideo.languages.ar;
       }
     }
-    
-    // Fallback to base video ID if language not found
     return baseVideo.youtubeId;
   };
   
   const youtubeId = getYoutubeId();
   
   useEffect(() => {
+    if (!baseVideo) {
+      setError("Video not found.");
+      return;
+    }
+    
     if (!youtubeId) {
-      setError("Video ID not available.");
+      setError("Video for this language not found.");
       return;
     }
     
@@ -88,33 +79,24 @@ const VideoPage = () => {
         }
 
         if (data.event === "onReady") {
-          setPlayerReady(true);
           setIsLoaded(true);
         }
-        
-        // Handle YouTube player errors
-        if (data.event === "onError") {
-          console.error("YouTube player error:", data.info);
-          setError("Video playback error. The video might be unavailable or restricted.");
-        }
       } catch (e) {
-        // Ignore parsing errors from other message events
       }
     };
     
     window.addEventListener('message', handleMessage);
     
-    // Force loading state to complete after timeout
     const loadTimeout = setTimeout(() => {
       setIsLoaded(true);
-    }, 3000);
+    }, 1500);
     
     return () => {
       clearTimeout(timer);
       clearTimeout(loadTimeout);
       window.removeEventListener('message', handleMessage);
     };
-  }, [youtubeId]);
+  }, [youtubeId, baseVideo]);
   
   const handleControlsToggle = () => {
     setShowControls(true);
@@ -201,6 +183,7 @@ const VideoPage = () => {
                 <iframe
                   ref={videoRef}
                   className="w-full h-full"
+                  // Removed &mute=1 from URL to start unmuted
                   src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&playsinline=1`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
