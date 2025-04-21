@@ -1,8 +1,7 @@
-
 export interface VideoConfig {
   youtubeId: string;
-  title?: string; // Make title optional
-  description?: string; // Make description optional
+  title?: string;
+  description?: string;
   languages?: {
     en: string;
     fr: string;
@@ -10,7 +9,6 @@ export interface VideoConfig {
   };
 }
 
-// Added YouTube IDs for first 6 exhibits as per provided links
 export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
   'exhibit01': {
     youtubeId: '60AQ_snhrIM', // fallback
@@ -63,19 +61,34 @@ export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
   'exhibit07': {
     youtubeId: 'OvROG_LWmcM',
     languages: {
-      ar: 'OvROG_LWmcM',
-      en: 'zrF_FIjHf0c',
-      fr: 'hK7oA2guB_I'
+      ar: 'ZyhVQucmIsw',
+      en: 'JL-8FybUyLg',
+      fr: 'XRW9poJzw2M'
     }
   },
   'exhibit08': {
-    youtubeId: '',
+    youtubeId: 'UWb5OTHj0GM',
+    languages: {
+      ar: 'UWb5OTHj0GM',
+      en: 'eBJSXsgS51A',
+      fr: 'yHp4l_6gszg'
+    }
   },
   'exhibit09': {
-    youtubeId: '',
+    youtubeId: 'DXHMsnKKZ5U',
+    languages: {
+      ar: 'DXHMsnKKZ5U',
+      en: '1PlBcIhhUfE',
+      fr: 'BwhbtWsX8g4'
+    }
   },
   'exhibit10': {
-    youtubeId: '',
+    youtubeId: '1EHaXd7mKmI',
+    languages: {
+      ar: '1EHaXd7mKmI',
+      en: 'jI-6GYd06BU',
+      fr: 'VG_35B8uEOQ'
+    }
   },
   'exhibit11': {
     youtubeId: '',
