@@ -9,9 +9,9 @@ interface LanguageSelectorProps {
 }
 
 const languages = [
-  { code: "en", name: "English", suffix: "-en" },
-  { code: "fr", name: "Français", suffix: "-fr" },
-  { code: "ar", name: "العربية", suffix: "-ar" },
+  { code: "ar", name: "العربية", suffix: "-ar" },   // Arabic first
+  { code: "en", name: "English", suffix: "-en" },  // English second
+  { code: "fr", name: "Français", suffix: "-fr" }, // French last
 ];
 
 const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
@@ -27,8 +27,16 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-darkBg flex flex-col items-center justify-center p-6">
-      <div className="max-w-md w-full text-center">
+    <div 
+      className="min-h-screen flex flex-col items-center justify-center p-6 relative"
+      style={{ 
+        backgroundImage: 'url("/lovable-uploads/3603e013-56e2-48fb-bac7-640fb28a24e9.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      <div className="absolute inset-0 bg-black opacity-50"></div>
+      <div className="max-w-md w-full text-center relative z-10">
         <div className="mb-8">
           <div className="mx-auto w-16 h-16 bg-gold/20 rounded-full flex items-center justify-center mb-4">
             <Globe size={32} className="text-gold" />
