@@ -13,11 +13,11 @@ export interface VideoConfig {
 // Added YouTube IDs for first 6 exhibits as per provided links
 export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
   'exhibit01': {
-    youtubeId: 'ALHZqz1fMrM', // fallback
+    youtubeId: '60AQ_snhrIM', // fallback
     languages: {
-      ar: 'ALHZqz1fMrM',
-      en: '1VgJwBKnIxk',
-      fr: 'UnSwaiO-w3I'
+      ar: '60AQ_snhrIM',
+      en: 'swt7XqKpduQ',
+      fr: 'NuXBw0j4VE4'
     }
   },
   'exhibit02': {
@@ -61,7 +61,12 @@ export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
     }
   },
   'exhibit07': {
-    youtubeId: '',
+    youtubeId: 'OvROG_LWmcM',
+    languages: {
+      ar: 'OvROG_LWmcM',
+      en: 'zrF_FIjHf0c',
+      fr: 'hK7oA2guB_I'
+    }
   },
   'exhibit08': {
     youtubeId: '',
