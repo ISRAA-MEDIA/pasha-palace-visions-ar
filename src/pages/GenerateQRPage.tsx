@@ -1,3 +1,4 @@
+
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import { VIDEOS_CONFIG } from "@/config/videos";
@@ -6,6 +7,8 @@ import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import ReactDOM from "react-dom";
+import { generateExhibitQRData } from "@/utils/qrGenerator";
 
 const GenerateQRPage = () => {
   const [selectedVideo, setSelectedVideo] = useState<string>("");
@@ -22,66 +25,6 @@ const GenerateQRPage = () => {
     });
   };
 
-  // Generate a data URL for a QR code
-  function generateQRDataUrl(value: string) {
-    // Create a canvas element to draw the QR code
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const size = 200; // Size of the QR code
-    
-    canvas.width = size;
-    canvas.height = size;
-    
-    if (ctx) {
-      // Draw white background
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, size, size);
-      
-      // Create a temporary container to render the QR code
-      const tempContainer = document.createElement('div');
-      document.body.appendChild(tempContainer);
-      
-      // Render the QR code to the container
-      const qrRoot = document.createElement('div');
-      tempContainer.appendChild(qrRoot);
-      
-      // Use ReactDOM to render the QRCodeSVG component to the temporary container
-      const ReactDOM = require('react-dom');
-      ReactDOM.render(
-        <QRCodeSVG
-          value={value}
-          size={size - 20}
-          level="H"
-          includeMargin={true}
-        />,
-        qrRoot
-      );
-      
-      // Get the SVG element
-      const svg = qrRoot.querySelector('svg');
-      
-      if (svg) {
-        // Convert SVG to a data URL
-        const serializer = new XMLSerializer();
-        const svgStr = serializer.serializeToString(svg);
-        const svgBlob = new Blob([svgStr], { type: 'image/svg+xml' });
-        
-        // Draw the SVG to the canvas
-        const img = new Image();
-        img.onload = () => {
-          ctx.drawImage(img, 10, 10);
-        };
-        img.src = URL.createObjectURL(svgBlob);
-      }
-      
-      // Clean up
-      document.body.removeChild(tempContainer);
-    }
-    
-    // Return the data URL
-    return canvas.toDataURL('image/png');
-  }
-
   // Download all QR codes as ZIP
   const handleDownloadAllQRCodes = async () => {
     const zip = new JSZip();
@@ -94,7 +37,7 @@ const GenerateQRPage = () => {
       const svgElement = document.createElement('div');
       document.body.appendChild(svgElement);
       
-      const ReactDOM = require('react-dom');
+      // Use imported ReactDOM instead of require
       ReactDOM.render(
         <QRCodeSVG 
           value={url}
