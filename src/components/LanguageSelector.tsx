@@ -30,7 +30,7 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
     <div 
       className="min-h-screen flex flex-col items-center justify-center p-6 relative"
       style={{ 
-        backgroundImage: 'url("/museum-background.jpg")',
+        backgroundImage: 'url("/lovable-uploads/3603e013-56e2-48fb-bac7-640fb28a24e9.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -71,3 +71,4 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
 };
 
 export default LanguageSelector;
+
