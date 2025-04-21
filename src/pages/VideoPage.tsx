@@ -19,7 +19,7 @@ const VideoPage = () => {
   
   // State for video player
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [error, setError] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
