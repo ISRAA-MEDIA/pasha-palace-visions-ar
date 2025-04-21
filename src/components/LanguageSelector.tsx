@@ -17,13 +17,19 @@ const languages = [
 const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
   const navigate = useNavigate();
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
+  const [noLanguageSelected, setNoLanguageSelected] = useState<boolean>(false);
 
   const videoConfig = VIDEOS_CONFIG[videoId as keyof typeof VIDEOS_CONFIG];
   
   const handleLanguageSelect = (langSuffix: string) => {
     setSelectedLang(langSuffix);
-    // Direct navigation to avoid React hooks issues
-    window.location.href = `/v/${videoId}${langSuffix}`;
+    navigate(`/v/${videoId}${langSuffix}`);
+  };
+
+  // Option to proceed without language selection
+  const handleSkipLanguageSelection = () => {
+    setNoLanguageSelected(true);
+    navigate(`/v/${videoId}`);
   };
 
   return (
@@ -52,18 +58,28 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
             <button
               key={lang.code}
               onClick={() => handleLanguageSelect(lang.suffix)}
-              disabled={selectedLang !== null}
+              disabled={selectedLang !== null || noLanguageSelected}
               className={`w-full py-4 px-6 ${
                 selectedLang === lang.suffix
                   ? "bg-gold/30"
                   : "bg-black/50 hover:bg-black/70"
               } text-white rounded-lg transition-all flex items-center justify-center gap-3 ${
-                selectedLang !== null && selectedLang !== lang.suffix ? "opacity-50" : ""
+                (selectedLang !== null && selectedLang !== lang.suffix) || noLanguageSelected ? "opacity-50" : ""
               } fade-in`}
             >
               {lang.name}
             </button>
           ))}
+          
+          <button
+            onClick={handleSkipLanguageSelection}
+            disabled={selectedLang !== null || noLanguageSelected}
+            className={`w-full py-3 px-6 mt-4 bg-transparent border border-white/30 hover:border-white/50 text-white/70 hover:text-white/90 rounded-lg transition-all flex items-center justify-center fade-in ${
+              selectedLang !== null || noLanguageSelected ? "opacity-50" : ""
+            }`}
+          >
+            Continue without selecting language
+          </button>
         </div>
       </div>
     </div>
