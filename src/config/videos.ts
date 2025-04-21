@@ -1,7 +1,6 @@
+
 export interface VideoConfig {
   youtubeId: string;
-  title: string;
-  description: string;
   languages?: {
     en: string;
     fr: string;
@@ -9,45 +8,66 @@ export interface VideoConfig {
   };
 }
 
+// Generate 20 blank entries for now
 export const VIDEOS_CONFIG: Record<string, VideoConfig> = {
-  'sample': {
-    youtubeId: 'Z0cDwBdAC5o',
-    title: 'The Grand Hall',
-    description: 'Discover the ornate details of the main reception hall',
-    languages: {
-      en: 'ipbsTRR-a3s',
-      fr: 'ipbsTRR-a3s',
-      ar: 'ipbsTRR-a3s',
-    }
+  'exhibit01': {
+    youtubeId: '',
   },
-  'dining': {
-    youtubeId: 'wuQEFQ7oZzk',
-    title: 'The Dining Chamber',
-    description: 'Where elegant feasts were once served to distinguished guests',
+  'exhibit02': {
+    youtubeId: '',
   },
-  'garden': {
-    youtubeId: 'FtutLA63Cp8',
-    title: 'The Palace Gardens',
-    description: 'Explore the beautiful gardens surrounding the palace',
+  'exhibit03': {
+    youtubeId: '',
   },
-  'library': {
-    youtubeId: 'QH2-TGUlwu4',
-    title: 'The Ancient Library',
-    description: 'Home to thousands of rare manuscripts and historical documents',
+  'exhibit04': {
+    youtubeId: '',
   },
-  'pasha': {
-    youtubeId: 'Z0cDwBdAC5o',
-    title: 'Museum Shorts',
-    description: 'A quick glimpse into our museum experience',
-    languages: {
-      en: 'Z0cDwBdAC5o',
-      fr: 'Z0cDwBdAC5o',
-      ar: 'Z0cDwBdAC5o',
-    }
+  'exhibit05': {
+    youtubeId: '',
   },
-  'secret-passage': {
-    youtubeId: 'BVPp8DLmdb0',
-    title: 'The Hidden Passage',
-    description: 'A glimpse into a secret corridor rarely seen by visitors',
+  'exhibit06': {
+    youtubeId: '',
+  },
+  'exhibit07': {
+    youtubeId: '',
+  },
+  'exhibit08': {
+    youtubeId: '',
+  },
+  'exhibit09': {
+    youtubeId: '',
+  },
+  'exhibit10': {
+    youtubeId: '',
+  },
+  'exhibit11': {
+    youtubeId: '',
+  },
+  'exhibit12': {
+    youtubeId: '',
+  },
+  'exhibit13': {
+    youtubeId: '',
+  },
+  'exhibit14': {
+    youtubeId: '',
+  },
+  'exhibit15': {
+    youtubeId: '',
+  },
+  'exhibit16': {
+    youtubeId: '',
+  },
+  'exhibit17': {
+    youtubeId: '',
+  },
+  'exhibit18': {
+    youtubeId: '',
+  },
+  'exhibit19': {
+    youtubeId: '',
+  },
+  'exhibit20': {
+    youtubeId: '',
   }
 };
