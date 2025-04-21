@@ -1,6 +1,8 @@
 
 export interface VideoConfig {
   youtubeId: string;
+  title?: string; // Make title optional
+  description?: string; // Make description optional
   languages?: {
     en: string;
     fr: string;

@@ -160,7 +160,7 @@ const VideoPage = () => {
         
         {baseVideo && (
           <>
-            <h1 className="text-gold text-2xl font-playfair mb-4 fade-in">{baseVideo.title}</h1>
+            {baseVideo.title && <h1 className="text-gold text-2xl font-playfair mb-4 fade-in">{baseVideo.title}</h1>}
             <div 
               ref={containerRef}
               className={`video-container relative w-full max-w-4xl bg-black overflow-hidden ${isLoaded ? "loaded" : ""}`}
@@ -187,7 +187,7 @@ const VideoPage = () => {
                   src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&playsinline=1`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  title={baseVideo.title}
+                  title={baseVideo.title || `Exhibit: ${baseVideoId}`}
                   style={{ position: 'relative', zIndex: 1 }}
                 />
               </AspectRatio>
@@ -208,9 +208,11 @@ const VideoPage = () => {
                 </div>
               </div>
             </div>
-            <p className="text-white text-center mt-4 max-w-md bg-black/30 p-3 rounded-lg fade-in">
-              {baseVideo.description}
-            </p>
+            {baseVideo.description && (
+              <p className="text-white text-center mt-4 max-w-md bg-black/30 p-3 rounded-lg fade-in">
+                {baseVideo.description}
+              </p>
+            )}
           </>
         )}
       </div>
@@ -219,4 +221,3 @@ const VideoPage = () => {
 };
 
 export default VideoPage;
-

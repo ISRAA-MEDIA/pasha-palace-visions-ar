@@ -44,7 +44,7 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
           </div>
           <h1 className="text-2xl font-playfair text-gold mb-2 fade-in">Choose Your Language</h1>
           <p className="text-gray-300 fade-in">Select your preferred language to continue</p>
-          {videoConfig && <p className="text-gold mt-2 fade-in">{videoConfig.title}</p>}
+          {videoConfig?.title && <p className="text-gold mt-2 fade-in">{videoConfig.title}</p>}
         </div>
 
         <div className="space-y-3">
@@ -71,4 +71,3 @@ const LanguageSelector = ({ videoId }: LanguageSelectorProps) => {
 };
 
 export default LanguageSelector;
-

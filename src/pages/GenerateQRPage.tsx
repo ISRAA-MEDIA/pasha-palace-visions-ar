@@ -43,8 +43,8 @@ const GenerateQRPage = () => {
                 }`}
               >
                 <div onClick={() => setSelectedVideo(id)} className="cursor-pointer flex-grow">
-                  <h3 className="font-playfair text-lg mb-1">{config.title}</h3>
-                  <p className="text-sm text-gray-400">{config.description}</p>
+                  <h3 className="font-playfair text-lg mb-1">{config.title || `Exhibit: ${id}`}</h3>
+                  <p className="text-sm text-gray-400">{config.description || `QR code for exhibit ${id}`}</p>
                 </div>
                 {selectedVideo === id && (
                   <Button 
@@ -62,7 +62,7 @@ const GenerateQRPage = () => {
           {selectedVideo && (
             <div className="bg-black/30 p-6 rounded-lg flex flex-col items-center">
               <h2 className="text-xl font-playfair mb-4 text-gold">
-                QR Code for {VIDEOS_CONFIG[selectedVideo].title}
+                QR Code for {VIDEOS_CONFIG[selectedVideo].title || `Exhibit: ${selectedVideo}`}
               </h2>
               <div className="bg-white p-2 rounded-lg inline-block w-40 h-40 flex items-center justify-center">
                 <QRCodeSVG
