@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
@@ -16,7 +15,6 @@ const VideoPage = () => {
   const baseVideoId = videoId?.split('-')[0];
   const langSuffix = videoId?.includes('-') ? videoId?.substring(videoId.indexOf('-')) : null;
   
-  // Changed initial isMuted to false to start unmuted
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -183,7 +181,6 @@ const VideoPage = () => {
                 <iframe
                   ref={videoRef}
                   className="w-full h-full"
-                  // Removed &mute=1 from URL to start unmuted
                   src={`https://www.youtube-nocookie.com/embed/${youtubeId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&origin=${window.location.origin}&iv_load_policy=3&fs=0&disablekb=1&playlist=${youtubeId}&loop=1&autoplay=1&playsinline=1`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -206,6 +203,10 @@ const VideoPage = () => {
                     {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
                   </button>
                 </div>
+              </div>
+              
+              <div className="absolute bottom-2 right-2 z-50 text-white/70 text-xs font-light opacity-70 pointer-events-none">
+                by israa-media.com
               </div>
             </div>
             {baseVideo.description && (
