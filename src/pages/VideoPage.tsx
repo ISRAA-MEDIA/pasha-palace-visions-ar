@@ -159,6 +159,11 @@ const VideoPage = () => {
         {baseVideo && (
           <>
             {baseVideo.title && <h1 className="text-gold text-2xl font-playfair mb-4 fade-in">{baseVideo.title}</h1>}
+            
+            <div className="text-white/70 text-xs font-light opacity-70 mb-2 pointer-events-none">
+              by israa-media.com
+            </div>
+            
             <div 
               ref={containerRef}
               className={`video-container relative w-full max-w-4xl bg-black overflow-hidden ${isLoaded ? "loaded" : ""}`}
@@ -203,10 +208,6 @@ const VideoPage = () => {
                     {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
                   </button>
                 </div>
-              </div>
-              
-              <div className="absolute bottom-2 right-2 z-50 text-white/70 text-xs font-light opacity-70 pointer-events-none">
-                by israa-media.com
               </div>
             </div>
             {baseVideo.description && (
