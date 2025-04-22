@@ -158,11 +158,11 @@ const VideoPage = () => {
         
         {baseVideo && (
           <>
-            {baseVideo.title && <h1 className="text-gold text-2xl font-playfair mb-4 fade-in">{baseVideo.title}</h1>}
-            
-            <div className="text-white/70 text-xs font-light opacity-70 mb-2 pointer-events-none">
+            <div className="text-white/70 text-xs font-light opacity-70 mb-2 text-center w-full">
               by israa-media.com
             </div>
+            
+            {baseVideo.title && <h1 className="text-gold text-2xl font-playfair mb-4 fade-in">{baseVideo.title}</h1>}
             
             <div 
               ref={containerRef}
