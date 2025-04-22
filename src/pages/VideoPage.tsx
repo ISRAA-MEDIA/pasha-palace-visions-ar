@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Home, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { VIDEOS_CONFIG } from "@/config/videos";
@@ -158,8 +158,15 @@ const VideoPage = () => {
         
         {baseVideo && (
           <>
-            <div className="text-white/70 text-xs font-light opacity-70 mb-2 text-center w-full">
-              by israa-media.com
+            <div className="text-white text-sm font-medium mb-2 text-center w-full">
+              <a 
+                href="https://israa-media.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:text-gold transition-colors"
+              >
+                by israa-media.com
+              </a>
             </div>
             
             {baseVideo.title && <h1 className="text-gold text-2xl font-playfair mb-4 fade-in">{baseVideo.title}</h1>}
